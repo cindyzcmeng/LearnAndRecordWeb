@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汉语学习助手</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>汉语学习助手</h1>
+        </header>
+        
+        <main id="content">
+            <!-- 首页内容 -->
+            <section id="home" class="page active">
+                <div class="welcome-card">
+                    <h2>欢迎使用汉语学习助手</h2>
+                    <p>通过定制场景和AI助手练习汉语，提高口语和写作能力</p>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-item" onclick="navigateTo('scene-generator')">
+                            <i class="fas fa-lightbulb"></i>
+                            <h3>场景生成</h3>
+                            <p>创建定制对话场景</p>
+                        </div>
+                        <div class="feature-item" onclick="navigateTo('dialogue')">
+                            <i class="fas fa-comments"></i>
+                            <h3>对话练习</h3>
+                            <p>与AI助手进行对话</p>
+                        </div>
+                        <div class="feature-item" onclick="navigateTo('voice-diary')">
+                            <i class="fas fa-microphone"></i>
+                            <h3>语音日记</h3>
+                            <p>录制获取语言反馈</p>
+                        </div>
+                        <div class="feature-item" onclick="navigateTo('diary-list')">
+                            <i class="fas fa-book"></i>
+                            <h3>日记列表</h3>
+                            <p>查看日记和反馈</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 场景生成器页面 -->
+            <section id="scene-generator" class="page">
+                <h2>场景生成</h2>
+                <div class="scene-form">
+                    <div class="form-group">
+                        <label for="scene-title">场景标题</label>
+                        <input type="text" id="scene-title" placeholder="例如：餐厅点餐">
+                    </div>
+                    <div class="form-group">
+                        <label for="scene-description">场景描述</label>
+                        <textarea id="scene-description" placeholder="简单描述这个场景，例如：在中国餐厅点菜并询问菜品"></textarea>
+                    </div>
+                    <button id="generate-scene-btn" class="primary-btn">生成场景</button>
+                </div>
+                <div id="scene-result" class="scene-result hidden">
+                    <div class="scene-card">
+                        <div class="role-info">
+                            <div class="role-item">
+                                <h3>AI角色</h3>
+                                <p id="bot-role"></p>
+                            </div>
+                            <div class="role-item">
+                                <h3>你的角色</h3>
+                                <p id="user-role"></p>
+                            </div>
+                        </div>
+                        <div class="task-info">
+                            <h3>对话任务</h3>
+                            <p id="dialogue-task"></p>
+                        </div>
+                        <button id="start-dialogue-btn" class="primary-btn">开始对话</button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 对话练习页面 -->
+            <section id="dialogue" class="page">
+                <div class="current-scene-info hidden">
+                    <h3>当前场景：<span id="current-scene-title">未选择</span></h3>
+                    <button id="view-scene-details" class="text-btn">查看详情</button>
+                </div>
+                <div class="scene-selection" id="scene-selection">
+                    <h3>选择对话场景</h3>
+                    <div class="scene-list" id="scene-list">
+                        <!-- 场景列表将通过JS动态生成 -->
+                    </div>
+                </div>
+                <div id="chat-container" class="chat-container hidden">
+                    <div id="chat-messages" class="chat-messages"></div>
+                    <div class="chat-input-container">
+                        <textarea id="chat-input" placeholder="输入你的回复..."></textarea>
+                        <button id="send-message-btn"><i class="fas fa-paper-plane"></i></button>
+                        <button id="voice-input-btn"><i class="fas fa-microphone"></i></button>
+                    </div>
+                    <div class="chat-actions">
+                        <button id="end-chat-btn" class="secondary-btn">结束对话</button>
+                        <button id="get-feedback-btn" class="primary-btn">获取反馈</button>
+                    </div>
+                </div>
+                <div id="feedback-container" class="feedback-container hidden">
+                    <h3>语言反馈</h3>
+                    <div id="feedback-content"></div>
+                    <button id="close-feedback-btn" class="secondary-btn">关闭</button>
+                </div>
+            </section>
+            
+            <!-- 语音日记页面 -->
+            <section id="voice-diary" class="page">
+                <h2>语音日记</h2>
+                <div class="voice-recorder">
+                    <div class="record-status" id="record-status">点击下方按钮开始录音</div>
+                    <div class="record-timer" id="record-timer">00:00</div>
+                    <div class="record-controls">
+                        <button id="start-record-btn" class="record-btn"><i class="fas fa-microphone"></i></button>
+                        <button id="stop-record-btn" class="record-btn hidden"><i class="fas fa-stop"></i></button>
+                    </div>
+                </div>
+                <div class="diary-form hidden" id="diary-form">
+                    <div class="form-group">
+                        <label for="diary-title">日记标题</label>
+                        <input type="text" id="diary-title" placeholder="给你的日记起个标题">
+                    </div>
+                    <div class="form-group">
+                        <label for="diary-text">日记内容</label>
+                        <textarea id="diary-text" placeholder="这里显示语音识别的文本，你可以编辑"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button id="cancel-diary-btn" class="secondary-btn">取消</button>
+                        <button id="save-diary-btn" class="primary-btn">保存并获取反馈</button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 日记列表页面 -->
+            <section id="diary-list" class="page">
+                <h2>我的日记</h2>
+                <div id="diaries-container" class="diaries-container">
+                    <!-- 日记列表将通过JS动态生成 -->
+                </div>
+            </section>
+            
+            <!-- 日记详情页面 -->
+            <section id="diary-detail" class="page">
+                <div class="page-header">
+                    <button id="back-to-list-btn" class="text-btn"><i class="fas fa-arrow-left"></i> 返回列表</button>
+                    <h2 id="detail-diary-title"></h2>
+                </div>
+                <div class="diary-content">
+                    <p id="detail-diary-text"></p>
+                </div>
+                <div class="diary-feedback">
+                    <h3>语言反馈</h3>
+                    <div id="detail-feedback-content"></div>
+                </div>
+                <div class="diary-actions">
+                    <button id="delete-diary-btn" class="danger-btn">删除日记</button>
+                </div>
+            </section>
+        </main>
+        
+        <nav class="main-nav">
+            <ul>
+                <li class="active" data-page="home"><i class="fas fa-home"></i> 首页</li>
+                <li data-page="scene-generator"><i class="fas fa-lightbulb"></i> 场景生成</li>
+                <li data-page="dialogue"><i class="fas fa-comments"></i> 对话练习</li>
+                <li data-page="voice-diary"><i class="fas fa-microphone"></i> 语音日记</li>
+                <li data-page="diary-list"><i class="fas fa-book"></i> 日记列表</li>
+            </ul>
+        </nav>
+        
+        <div id="loading-overlay" class="loading-overlay hidden">
+            <div class="spinner"></div>
+            <p>处理中...</p>
+        </div>
+        
+        <div id="modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <div id="modal-body"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/scenes.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/diary.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html> 
