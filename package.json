@@ -4,7 +4,7 @@
   "description": "汉语学习助手网站",
   "scripts": {
     "dev": "vercel dev",
-    "build": "node build",
+    "build": "vc dev -A vercel.local.json --listen 8000",
     "deploy": "vercel deploy --prod"
   },
   "dependencies": {
