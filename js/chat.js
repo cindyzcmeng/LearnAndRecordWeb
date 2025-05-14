@@ -11,12 +11,12 @@ class ChatManager {
         this.feedbackContent = document.getElementById('feedback-content');
         this.closeFeedbackBtn = document.getElementById('close-feedback-btn');
         
-        this.recognition = null;
-        this.isListening = false;
+        this.isRecording = false;
+        this.mediaRecorder = null;
+        this.audioChunks = [];
         this.messageCount = 0;
         
         this.initEventListeners();
-        this.initSpeechRecognition();
     }
     
     // 初始化事件监听器
@@ -36,7 +36,7 @@ class ChatManager {
         
         // 语音输入按钮
         this.voiceInputBtn.addEventListener('click', () => {
-            this.toggleVoiceInput();
+            this.toggleVoiceRecording();
         });
         
         // 结束对话按钮
@@ -55,51 +55,98 @@ class ChatManager {
         });
     }
     
-    // 初始化语音识别
-    initSpeechRecognition() {
-        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            this.recognition = new SpeechRecognition();
-            this.recognition.continuous = false;
-            this.recognition.interimResults = true;
-            this.recognition.lang = CONFIG.SPEECH_RECOGNITION.language;
-            
-            this.recognition.onresult = (event) => {
-                const transcript = Array.from(event.results)
-                    .map(result => result[0].transcript)
-                    .join('');
-                    
-                this.chatInput.value = transcript;
-            };
-            
-            this.recognition.onend = () => {
-                this.isListening = false;
-                this.voiceInputBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-            };
-            
-            this.recognition.onerror = (event) => {
-                console.error('语音识别错误:', event.error);
-                this.isListening = false;
-                this.voiceInputBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-            };
+    // 切换语音录制
+    async toggleVoiceRecording() {
+        if (this.isRecording) {
+            // 停止录音
+            this.stopRecording();
         } else {
-            this.voiceInputBtn.disabled = true;
-            this.voiceInputBtn.title = '您的浏览器不支持语音识别';
+            // 开始录音
+            this.startRecording();
         }
     }
     
-    // 切换语音输入
-    toggleVoiceInput() {
-        if (!this.recognition) return;
-        
-        if (this.isListening) {
-            this.recognition.stop();
-            this.isListening = false;
-            this.voiceInputBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-        } else {
-            this.recognition.start();
-            this.isListening = true;
+    // 开始录音
+    async startRecording() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            
+            // 使用 WEBM 格式，兼容 Google Speech-to-Text
+            this.mediaRecorder = new MediaRecorder(stream, {
+                mimeType: 'audio/webm;codecs=opus'
+            });
+            
+            this.audioChunks = [];
+            
+            this.mediaRecorder.addEventListener('dataavailable', (event) => {
+                this.audioChunks.push(event.data);
+            });
+            
+            this.mediaRecorder.addEventListener('stop', async () => {
+                // 更新UI状态
+                this.isRecording = false;
+                this.voiceInputBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                
+                // 创建音频Blob对象
+                const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm;codecs=opus' });
+                
+                // 处理录音结果
+                this.processRecording(audioBlob);
+                
+                // 停止所有轨道
+                stream.getTracks().forEach(track => track.stop());
+            });
+            
+            // 开始录音
+            this.mediaRecorder.start();
+            this.isRecording = true;
             this.voiceInputBtn.innerHTML = '<i class="fas fa-stop"></i>';
+            
+        } catch (error) {
+            console.error('无法访问麦克风:', error);
+            uiManager.showError('无法访问麦克风: ' + error.message);
+        }
+    }
+    
+    // 停止录音
+    stopRecording() {
+        if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+            this.mediaRecorder.stop();
+        }
+    }
+    
+    // 处理录音结果
+    async processRecording(audioBlob) {
+        try {
+            uiManager.showLoading('正在识别语音...');
+            
+            // 创建FormData对象
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'recording.webm');
+            
+            // 发送请求到API
+            const response = await fetch('/api/transcribe', {
+                method: 'POST',
+                body: formData,
+            });
+            
+            if (!response.ok) {
+                throw new Error(`语音识别请求失败: ${response.status}`);
+            }
+            
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                // 更新聊天输入框
+                this.chatInput.value = result.text;
+                uiManager.hideLoading();
+            } else {
+                throw new Error(result.error || '语音识别失败');
+            }
+        } catch (error) {
+            console.error('语音识别错误:', error);
+            uiManager.hideLoading();
+            uiManager.showError('语音识别失败: ' + error.message);
         }
     }
     
