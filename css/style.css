@@ -618,7 +618,7 @@ textarea {
     display: flex;
     justify-content: flex-end;
 }
-
+/*
 .audio-container {
     margin-bottom: 1.5rem;
     background-color: var(--secondary-color);
@@ -634,7 +634,7 @@ textarea {
 .audio-container audio {
     width: 100%;
 }
-
+*/
 /* 工具类 */
 .hidden {
     display: none !important;

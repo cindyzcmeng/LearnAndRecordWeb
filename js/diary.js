@@ -301,7 +301,7 @@ class DiaryManager {
                 title,
                 text,
                 feedback,
-                audioUrl: this.currentRecording,
+                //audioUrl: this.currentRecording,
                 createdAt: new Date().toISOString(),
                 isConversation: false // 默认为日记类型，非对话类型
             };
@@ -411,7 +411,7 @@ class DiaryManager {
         this.detailDiaryTitle.textContent = diary.title;
         this.detailDiaryText.textContent = diary.text;
         this.detailFeedbackContent.innerHTML = uiManager.formatFeedback(diary.feedback);
-        
+        /*
         // 如果有音频，添加音频播放器
         if (diary.audioUrl) {
             const audioPlayer = document.createElement('audio');
@@ -425,7 +425,7 @@ class DiaryManager {
             
             this.detailDiaryText.parentNode.insertBefore(audioContainer, this.detailDiaryText);
         }
-        
+        */
         // 设置删除按钮的数据ID
         this.deleteDiaryBtn.setAttribute('data-id', diary.id);
         
