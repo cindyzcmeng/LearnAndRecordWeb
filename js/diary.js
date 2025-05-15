@@ -7,7 +7,6 @@ class DiaryManager {
         this.audioChunks = [];
         this.recordTimer = null;
         this.recordTime = 0;
-        this.audioBlobForTranscript = null;
         
         // 语音日记页面元素
         this.recordStatus = document.getElementById('record-status');
@@ -90,12 +89,7 @@ class DiaryManager {
     async startRecording() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            
-            // 使用 WEBM 格式，兼容 Google Speech-to-Text
-            this.mediaRecorder = new MediaRecorder(stream, {
-                mimeType: 'audio/webm;codecs=opus'
-            });
-            
+            this.mediaRecorder = new MediaRecorder(stream);
             this.audioChunks = [];
             
             this.mediaRecorder.addEventListener('dataavailable', (event) => {
@@ -103,9 +97,7 @@ class DiaryManager {
             });
             
             this.mediaRecorder.addEventListener('stop', () => {
-                // 创建音频Blob对象
-                const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm;codecs=opus' });
-                this.audioBlobForTranscript = audioBlob;
+                const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
                 this.currentRecording = URL.createObjectURL(audioBlob);
                 
                 // 自动识别语音
@@ -115,7 +107,7 @@ class DiaryManager {
                 this.diaryForm.classList.remove('hidden');
                 
                 // 重置录音界面
-                this.recordStatus.textContent = '正在识别语音...';
+                this.recordStatus.textContent = '录音已完成，请填写日记信息';
                 this.startRecordBtn.classList.remove('hidden');
                 this.recordTimerElement.textContent = '00:00';
                 
@@ -161,40 +153,19 @@ class DiaryManager {
     }
     
     // 语音识别
-    async recognizeSpeech(audioBlob) {
-        try {
-            uiManager.showLoading();
-            
-            // 创建FormData对象
-            const formData = new FormData();
-            formData.append('audio', audioBlob, 'recording.webm');
-            
-            // 发送请求到API
-            const response = await fetch('/api/transcribe', {
-                method: 'POST',
-                body: formData,
-            });
-            
-            if (!response.ok) {
-                throw new Error(`语音识别请求失败: ${response.status}`);
-            }
-            
-            const result = await response.json();
-            
-            if (result.status === 'success') {
-                // 更新日记文本框
-                this.diaryText.value = result.text;
-                this.recordStatus.textContent = '语音识别已完成，请检查文本';
-            } else {
-                throw new Error(result.error || '语音识别失败');
-            }
-        } catch (error) {
-            console.error('语音识别错误:', error);
-            this.recordStatus.textContent = '语音识别失败，请手动输入';
-            this.diaryText.value = '';
-        } finally {
+    recognizeSpeech(audioBlob) {
+        // 在这里集成语音识别API
+        // 由于Web Speech API不支持直接从Blob识别，这里我们使用一个模拟实现
+        // 在实际应用中，你可能需要使用专门的语音识别服务
+        
+        // 模拟识别延迟
+        uiManager.showLoading();
+        
+        setTimeout(() => {
             uiManager.hideLoading();
-        }
+            // 这里仅作演示，实际应用中请替换为真实的语音识别API
+            this.diaryText.value = '这是语音识别的结果。在实际应用中，这里会显示您刚才录制的语音内容的文字记录。您可以编辑这些文字以纠正任何识别错误。';
+        }, 1500);
     }
     
     // 保存日记
@@ -259,7 +230,6 @@ class DiaryManager {
         this.diaryTitle.value = '';
         this.diaryText.value = '';
         this.currentRecording = null;
-        this.audioBlobForTranscript = null;
         this.recordStatus.textContent = '点击下方按钮开始录音';
     }
     

@@ -58,9 +58,7 @@ class UiManager {
     }
     
     // 显示加载中
-    showLoading(message = '处理中...') {
-        const loadingText = this.loadingOverlay.querySelector('p');
-        loadingText.textContent = message;
+    showLoading() {
         this.loadingOverlay.classList.remove('hidden');
     }
     
