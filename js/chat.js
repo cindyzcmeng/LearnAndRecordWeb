@@ -280,11 +280,61 @@ class ChatManager {
             this.feedbackContent.innerHTML = uiManager.formatFeedback(feedback);
             this.feedbackContainer.classList.remove('hidden');
             
+            // 保存到历史记录
+            this.saveToHistory(feedback);
+            
         } catch (error) {
             // 移除加载中指示器
             this.removeTypingIndicator();
             
             uiManager.showError('获取反馈失败: ' + error.message);
+        }
+    }
+    
+    // 保存对话到历史记录
+    saveToHistory(feedback) {
+        // 获取场景信息
+        const sceneName = document.getElementById('current-scene-title').textContent;
+        if(!sceneName || sceneName === '未选择') return;
+        
+        // 获取所有对话内容
+        const messages = apiService.getConversationHistory();
+        let chatContent = '';
+        
+        // 提取对话内容
+        messages.forEach(msg => {
+            if(msg.role === 'user' || msg.role === 'assistant') {
+                const role = msg.role === 'user' ? '我' : '对方';
+                chatContent += `${role}: ${msg.content}\n\n`;
+            }
+        });
+        
+        if(!chatContent) return;
+        
+        // 创建新的历史记录项
+        const newHistory = {
+            id: Date.now().toString(),
+            title: `对话: ${sceneName}`,
+            text: chatContent,
+            feedback: feedback,
+            createdAt: new Date().toISOString(),
+            isConversation: true
+        };
+        
+        // 添加到历史记录
+        // 检查diaryManager是否存在
+        if(typeof diaryManager !== 'undefined') {
+            diaryManager.diaries.push(newHistory);
+            diaryManager.saveDiaries();
+            
+            // 成功提示
+            uiManager.showModal(`
+                <div class="success-message">
+                    <h3>保存成功</h3>
+                    <p>对话已保存到历史记录</p>
+                    <button class="primary-btn" onclick="uiManager.hideModal();">我知道了</button>
+                </div>
+            `);
         }
     }
 }

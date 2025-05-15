@@ -38,8 +38,8 @@
                         </div>
                         <div class="feature-item" onclick="navigateTo('diary-list')">
                             <i class="fas fa-book"></i>
-                            <h3>日记列表</h3>
-                            <p>查看日记和反馈</p>
+                            <h3>历史记录</h3>
+                            <p>查看学习记录和反馈</p>
                         </div>
                     </div>
                 </div>
@@ -143,11 +143,16 @@
                 </div>
             </section>
             
-            <!-- 日记列表页面 -->
+            <!-- 历史记录页面 -->
             <section id="diary-list" class="page">
-                <h2>我的日记</h2>
+                <h2>历史记录</h2>
+                <div class="history-tabs">
+                    <button class="history-tab active" data-type="all">全部</button>
+                    <button class="history-tab" data-type="diary">日记</button>
+                    <button class="history-tab" data-type="conversation">对话</button>
+                </div>
                 <div id="diaries-container" class="diaries-container">
-                    <!-- 日记列表将通过JS动态生成 -->
+                    <!-- 历史记录列表将通过JS动态生成 -->
                 </div>
             </section>
             
@@ -176,7 +181,7 @@
                 <li data-page="scene-generator"><i class="fas fa-lightbulb"></i> 场景生成</li>
                 <li data-page="dialogue"><i class="fas fa-comments"></i> 对话练习</li>
                 <li data-page="voice-diary"><i class="fas fa-microphone"></i> 语音日记</li>
-                <li data-page="diary-list"><i class="fas fa-book"></i> 日记列表</li>
+                <li data-page="diary-list"><i class="fas fa-history"></i> 历史记录</li>
             </ul>
         </nav>
         

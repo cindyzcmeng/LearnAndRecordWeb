@@ -64,6 +64,94 @@ class DiaryManager {
         this.deleteDiaryBtn.addEventListener('click', () => {
             this.deleteDiary();
         });
+        
+        // 历史记录标签过滤功能
+        this.initHistoryTabs();
+    }
+    
+    // 初始化历史记录标签过滤功能
+    initHistoryTabs() {
+        const historyTabs = document.querySelectorAll('.history-tab');
+        historyTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 移除所有标签的active类
+                historyTabs.forEach(t => t.classList.remove('active'));
+                
+                // 添加active类到当前点击的标签
+                tab.classList.add('active');
+                
+                // 获取过滤类型
+                const filterType = tab.getAttribute('data-type');
+                
+                // 根据类型过滤日记列表
+                this.filterDiaryList(filterType);
+            });
+        });
+    }
+    
+    // 根据类型过滤日记列表
+    filterDiaryList(filterType) {
+        // 如果无日记，直接返回
+        if (this.diaries.length === 0) return;
+        
+        // 获取排序后的日记
+        const sortedDiaries = [...this.diaries].sort((a, b) => {
+            return new Date(b.createdAt) - new Date(a.createdAt);
+        });
+        
+        // 清空容器
+        this.diariesContainer.innerHTML = '';
+        
+        // 根据类型过滤
+        let filteredDiaries = sortedDiaries;
+        if (filterType === 'diary') {
+            filteredDiaries = sortedDiaries.filter(diary => !diary.isConversation);
+        } else if (filterType === 'conversation') {
+            filteredDiaries = sortedDiaries.filter(diary => diary.isConversation);
+        }
+        
+        // 如果过滤后没有内容，显示空消息
+        if (filteredDiaries.length === 0) {
+            const emptyMessage = document.createElement('div');
+            emptyMessage.className = 'empty-message';
+            emptyMessage.textContent = `没有${filterType === 'diary' ? '日记' : '对话'}记录`;
+            this.diariesContainer.appendChild(emptyMessage);
+            return;
+        }
+        
+        // 显示过滤后的日记列表
+        filteredDiaries.forEach(diary => {
+            const diaryItem = document.createElement('div');
+            diaryItem.className = 'diary-item';
+            diaryItem.setAttribute('data-id', diary.id);
+            
+            const header = document.createElement('div');
+            header.className = 'diary-item-header';
+            
+            const title = document.createElement('h3');
+            title.textContent = diary.title;
+            
+            const date = document.createElement('div');
+            date.className = 'diary-date';
+            date.textContent = new Date(diary.createdAt).toLocaleString();
+            
+            header.appendChild(title);
+            header.appendChild(date);
+            
+            const preview = document.createElement('p');
+            preview.className = 'diary-preview';
+            preview.textContent = diary.text.substr(0, 100) + (diary.text.length > 100 ? '...' : '');
+            
+            diaryItem.appendChild(header);
+            diaryItem.appendChild(preview);
+            
+            // 添加点击事件
+            diaryItem.addEventListener('click', () => {
+                this.viewDiaryDetail(diary);
+            });
+            
+            this.diariesContainer.appendChild(diaryItem);
+        });
     }
     
     // 加载保存的日记
@@ -214,7 +302,8 @@ class DiaryManager {
                 text,
                 feedback,
                 audioUrl: this.currentRecording,
-                createdAt: new Date().toISOString()
+                createdAt: new Date().toISOString(),
+                isConversation: false // 默认为日记类型，非对话类型
             };
             
             // 添加到日记列表
@@ -232,7 +321,7 @@ class DiaryManager {
                 <div class="success-message">
                     <h3>保存成功</h3>
                     <p>您的日记已保存，并已生成语言反馈</p>
-                    <button class="primary-btn" onclick="uiManager.hideModal(); uiManager.navigateTo('diary-list');">查看日记列表</button>
+                    <button class="primary-btn" onclick="uiManager.hideModal(); uiManager.navigateTo('diary-list');">查看历史记录</button>
                 </div>
             `);
             
@@ -258,12 +347,22 @@ class DiaryManager {
     
     // 渲染日记列表
     renderDiaryList() {
+        // 获取当前选中的标签类型
+        const activeTab = document.querySelector('.history-tab.active');
+        if (activeTab) {
+            // 如果有选中的标签，使用该标签的过滤类型
+            const filterType = activeTab.getAttribute('data-type');
+            this.filterDiaryList(filterType);
+            return;
+        }
+        
+        // 如果没有选中的标签（初始加载），使用默认显示全部
         this.diariesContainer.innerHTML = '';
         
         if (this.diaries.length === 0) {
             const emptyMessage = document.createElement('div');
             emptyMessage.className = 'empty-message';
-            emptyMessage.textContent = '暂无日记，请先创建日记';
+            emptyMessage.textContent = '暂无历史记录';
             this.diariesContainer.appendChild(emptyMessage);
             return;
         }

@@ -1070,4 +1070,68 @@ textarea {
     font-weight: 600;
     padding-left: 0.5rem;
     border-left: 3px solid var(--primary-color);
+}
+
+/* 历史记录样式 */
+.history-tabs {
+    display: flex;
+    margin-bottom: 1.5rem;
+    background-color: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.history-tab {
+    flex: 1;
+    padding: 1rem;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    color: var(--light-text);
+    font-weight: 500;
+    transition: var(--transition);
+    border-bottom: 3px solid transparent;
+}
+
+.history-tab.active {
+    color: var(--primary-color);
+    border-bottom: 3px solid var(--primary-color);
+    background-color: rgba(52, 152, 219, 0.05);
+}
+
+.history-item {
+    background-color: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow);
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-bottom: 1.2rem;
+    position: relative;
+}
+
+.history-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(52, 152, 219, 0.15);
+}
+
+.history-type-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 3px;
+    font-weight: 500;
+}
+
+.history-type-diary {
+    background-color: rgba(76, 217, 100, 0.1);
+    color: #4cd964;
+}
+
+.history-type-conversation {
+    background-color: rgba(52, 152, 219, 0.1);
+    color: var(--primary-color);
 } 
