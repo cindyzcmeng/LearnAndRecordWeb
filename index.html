@@ -11,6 +11,7 @@
     <div class="app-container">
         <header>
             <h1>L&R 网页测试版</h1>
+            <button id="comment-btn" class="comment-btn"><i class="fas fa-comment"></i> 留言反馈</button>
         </header>
         
         <main id="content">
@@ -42,6 +43,17 @@
                             <p>查看学习记录和反馈</p>
                         </div>
                     </div>
+                </div>
+
+                <!-- 主页底部评论表单 -->
+                <div class="comment-section">
+                    <h3>留下你的评论</h3>
+                    <form id="homeCommentForm" class="comment-form">
+                        <input type="text" name="name" placeholder="你的名字">
+                        <textarea name="message" placeholder="留言内容"></textarea>
+                        <button type="submit" class="primary-btn">提交</button>
+                    </form>
+                    <p id="homeResultMsg" class="result-msg"></p>
                 </div>
             </section>
             
@@ -196,6 +208,19 @@
                 <div id="modal-body"></div>
             </div>
         </div>
+        
+        <div id="comment-modal" class="comment-modal">
+            <div class="comment-modal-content">
+                <span class="close-comment-modal">&times;</span>
+                <h3>留下你的评论</h3>
+                <form id="commentForm" class="comment-form">
+                    <input type="text" name="name" placeholder="你的名字">
+                    <textarea name="message" placeholder="留言内容"></textarea>
+                    <button type="submit" class="primary-btn">提交</button>
+                </form>
+                <p id="resultMsg" class="result-msg"></p>
+            </div>
+        </div>
     </div>
     
     <script src="js/config.js"></script>
@@ -205,5 +230,6 @@
     <script src="js/chat.js"></script>
     <script src="js/diary.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/comment.js"></script>
 </body>
 </html> 
