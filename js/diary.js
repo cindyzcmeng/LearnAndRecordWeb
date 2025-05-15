@@ -87,6 +87,22 @@ class DiaryManager {
     
     // 开始录音
     async startRecording() {
+        // 直接显示日记表单
+        this.diaryForm.classList.remove('hidden');
+        
+        // 更新录音状态
+        this.recordStatus.textContent = '语音识别功能暂未上线，请先使用手机自带的语音识别输入功能';
+        
+        // 重置录音界面
+        this.startRecordBtn.classList.remove('hidden');
+        this.stopRecordBtn.classList.add('hidden');
+        this.recordTimerElement.textContent = '00:00';
+        
+        // 清空录音相关数据
+        this.currentRecording = null;
+        this.audioChunks = [];
+        
+        // 以下代码暂时保留但不会执行
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             this.mediaRecorder = new MediaRecorder(stream);
@@ -125,11 +141,11 @@ class DiaryManager {
             this.stopRecordBtn.classList.remove('hidden');
             
         } catch (error) {
-            console.error('无法访问麦克风:', error);
-            uiManager.showError('无法访问麦克风: ' + error.message);
+            //console.error('无法访问麦克风:', error);
+            //uiManager.showError('无法访问麦克风: ' + error.message);
         }
     }
-    
+    /*
     // 开始计时器
     startRecordTimer() {
         this.recordTime = 0;
@@ -151,7 +167,8 @@ class DiaryManager {
             this.stopRecordBtn.classList.add('hidden');
         }
     }
-    
+    */
+   
     // 语音识别
     recognizeSpeech(audioBlob) {
         // 在这里集成语音识别API
