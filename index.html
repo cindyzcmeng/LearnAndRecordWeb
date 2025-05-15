@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>汉语学习助手</title>
+    <title>L&R 网页测试版</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="app-container">
         <header>
-            <h1>汉语学习助手</h1>
+            <h1>L&R 网页测试版</h1>
         </header>
         
         <main id="content">
             <!-- 首页内容 -->
             <section id="home" class="page active">
                 <div class="welcome-card">
-                    <h2>欢迎使用汉语学习助手</h2>
+                    <h2>欢迎使用L&R 网页测试版</h2>
                     <p>通过定制场景和AI助手练习汉语，提高口语和写作能力</p>
                     
                     <div class="feature-grid">
@@ -87,7 +87,12 @@
                     <button id="view-scene-details" class="text-btn">查看详情</button>
                 </div>
                 <div class="scene-selection" id="scene-selection">
-                    <h3>选择对话场景</h3>
+                    <div class="scene-list-header">
+                        <h3>选择对话场景</h3>
+                        <button id="refresh-scenes-btn" class="text-btn" title="刷新场景列表">
+                            <i class="fas fa-sync-alt"></i> 刷新
+                        </button>
+                    </div>
                     <div class="scene-list" id="scene-list">
                         <!-- 场景列表将通过JS动态生成 -->
                     </div>

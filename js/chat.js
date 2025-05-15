@@ -34,10 +34,7 @@ class ChatManager {
             }
         });
         
-        // 语音输入按钮
-        this.voiceInputBtn.addEventListener('click', () => {
-            this.toggleVoiceInput();
-        });
+        // 语音输入按钮事件已在initSpeechRecognition中处理
         
         // 结束对话按钮
         this.endChatBtn.addEventListener('click', () => {
@@ -57,6 +54,22 @@ class ChatManager {
     
     // 初始化语音识别
     initSpeechRecognition() {
+        // 暂时禁用Web Speech API，改为显示提示信息
+        this.voiceInputBtn.addEventListener('click', () => {
+            uiManager.showModal(`
+                <div class="info-message">
+                    <h3>语音输入提示</h3>
+                    <p>网页版语音输入功能暂未上线，请使用手机自带的语音输入功能。</p>
+                    <button class="primary-btn" onclick="uiManager.hideModal();">我知道了</button>
+                </div>
+            `);
+        });
+        
+        // 更新按钮提示
+        this.voiceInputBtn.title = '语音输入功能暂未上线';
+        
+        /*
+        // 以下代码已禁用，不会执行 - 保留仅供参考
         if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             this.recognition = new SpeechRecognition();
@@ -86,10 +99,13 @@ class ChatManager {
             this.voiceInputBtn.disabled = true;
             this.voiceInputBtn.title = '您的浏览器不支持语音识别';
         }
+        */
     }
     
     // 切换语音输入
     toggleVoiceInput() {
+        // 该方法已被禁用，由initSpeechRecognition中的事件监听器替代
+        /*
         if (!this.recognition) return;
         
         if (this.isListening) {
@@ -100,6 +116,45 @@ class ChatManager {
             this.recognition.start();
             this.isListening = true;
             this.voiceInputBtn.innerHTML = '<i class="fas fa-stop"></i>';
+        }
+        */
+    }
+    
+    // 添加消息到聊天界面
+    addMessage(message, sender) {
+        const messageElement = document.createElement('div');
+        messageElement.className = `message ${sender}-message`;
+        messageElement.textContent = message;
+        
+        this.chatMessages.appendChild(messageElement);
+        this.scrollToBottom();
+    }
+    
+    // 添加加载中指示器
+    addTypingIndicator() {
+        const indicatorElement = document.createElement('div');
+        indicatorElement.className = 'message bot-typing';
+        indicatorElement.id = 'bot-typing-indicator';
+        
+        const typingIndicator = document.createElement('div');
+        typingIndicator.className = 'typing-indicator';
+        
+        // 添加三个小点
+        for (let i = 0; i < 3; i++) {
+            const dot = document.createElement('span');
+            typingIndicator.appendChild(dot);
+        }
+        
+        indicatorElement.appendChild(typingIndicator);
+        this.chatMessages.appendChild(indicatorElement);
+        this.scrollToBottom();
+    }
+    
+    // 移除加载中指示器
+    removeTypingIndicator() {
+        const indicator = document.getElementById('bot-typing-indicator');
+        if (indicator) {
+            indicator.remove();
         }
     }
     
@@ -118,15 +173,17 @@ class ChatManager {
         this.messageCount++;
         
         try {
-            uiManager.showLoading();
+            // 显示加载中指示器，而不是全屏加载层
+            this.addTypingIndicator();
             
             // 发送消息到API
             const reply = await apiService.sendMessage(message);
             
+            // 移除加载中指示器
+            this.removeTypingIndicator();
+            
             // 添加AI回复到聊天界面
             this.addMessage(reply, 'bot');
-            
-            uiManager.hideLoading();
             
             // 自动滚动到底部
             this.scrollToBottom();
@@ -136,19 +193,11 @@ class ChatManager {
                 this.showEndChatPrompt();
             }
         } catch (error) {
-            uiManager.hideLoading();
+            // 移除加载中指示器
+            this.removeTypingIndicator();
+            
             uiManager.showError('发送消息失败: ' + error.message);
         }
-    }
-    
-    // 添加消息到聊天界面
-    addMessage(message, sender) {
-        const messageElement = document.createElement('div');
-        messageElement.className = `message ${sender}-message`;
-        messageElement.textContent = message;
-        
-        this.chatMessages.appendChild(messageElement);
-        this.scrollToBottom();
     }
     
     // 添加系统消息（不显示在界面上）
@@ -160,17 +209,21 @@ class ChatManager {
     // 发送初始机器人消息
     async sendInitialBotMessage() {
         try {
-            uiManager.showLoading();
+            // 显示加载中指示器，而不是全屏加载层
+            this.addTypingIndicator();
             
             // 发送一个空消息来获取初始回复
             const reply = await apiService.sendMessage("请开始对话");
             
+            // 移除加载中指示器
+            this.removeTypingIndicator();
+            
             // 添加AI回复到聊天界面
             this.addMessage(reply, 'bot');
-            
-            uiManager.hideLoading();
         } catch (error) {
-            uiManager.hideLoading();
+            // 移除加载中指示器
+            this.removeTypingIndicator();
+            
             uiManager.showError('初始化对话失败: ' + error.message);
         }
     }
@@ -208,7 +261,8 @@ class ChatManager {
     // 获取反馈
     async getFeedback() {
         try {
-            uiManager.showLoading();
+            // 显示加载中指示器
+            this.addTypingIndicator();
             
             // 获取所有用户消息
             const userMessages = apiService.getConversationHistory()
@@ -219,13 +273,17 @@ class ChatManager {
             // 获取反馈
             const feedback = await apiService.sendMessage(userMessages, true);
             
+            // 移除加载中指示器
+            this.removeTypingIndicator();
+            
             // 显示反馈
             this.feedbackContent.innerHTML = uiManager.formatFeedback(feedback);
             this.feedbackContainer.classList.remove('hidden');
             
-            uiManager.hideLoading();
         } catch (error) {
-            uiManager.hideLoading();
+            // 移除加载中指示器
+            this.removeTypingIndicator();
+            
             uiManager.showError('获取反馈失败: ' + error.message);
         }
     }

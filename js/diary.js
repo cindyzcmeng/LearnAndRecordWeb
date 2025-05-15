@@ -87,7 +87,7 @@ class DiaryManager {
     
     // 开始录音
     async startRecording() {
-        // 直接显示日记表单
+        // 直接显示日记表单，不请求麦克风权限
         this.diaryForm.classList.remove('hidden');
         
         // 更新录音状态
@@ -102,7 +102,12 @@ class DiaryManager {
         this.currentRecording = null;
         this.audioChunks = [];
         
-        // 以下代码暂时保留但不会执行
+        // 在文本框中添加默认提示文本
+        this.diaryText.value = '请在此输入您的日记内容，或使用手机自带的语音输入功能';
+        this.diaryText.focus(); // 聚焦到文本框，便于用户直接输入
+        
+        // 以下代码已禁用，不会执行 - 保留代码仅供参考
+        /*
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             this.mediaRecorder = new MediaRecorder(stream);
@@ -141,9 +146,10 @@ class DiaryManager {
             this.stopRecordBtn.classList.remove('hidden');
             
         } catch (error) {
-            //console.error('无法访问麦克风:', error);
-            //uiManager.showError('无法访问麦克风: ' + error.message);
+            console.error('无法访问麦克风:', error);
+            uiManager.showError('无法访问麦克风: ' + error.message);
         }
+        */
     }
     /*
     // 开始计时器

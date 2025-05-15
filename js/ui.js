@@ -36,6 +36,29 @@ class UiManager {
     
     // 页面导航
     navigateTo(pageName) {
+        // 特殊处理：如果导航到对话页面，检查是否有选择场景
+        if (pageName === 'dialogue') {
+            // 在页面切换后检查场景，确保所有脚本都已加载
+            setTimeout(() => {
+                // 确保场景选择界面默认可见，聊天容器默认隐藏
+                const currentSceneInfo = document.querySelector('.current-scene-info');
+                const sceneSelection = document.getElementById('scene-selection');
+                const chatContainer = document.getElementById('chat-container');
+                
+                if (currentSceneInfo) currentSceneInfo.classList.add('hidden');
+                if (sceneSelection) sceneSelection.classList.remove('hidden');
+                if (chatContainer) chatContainer.classList.add('hidden');
+                
+                // 如果sceneManager已定义且存在currentScene，则显示对话界面
+                if (typeof window.sceneManager !== 'undefined' && window.sceneManager.currentScene) {
+                    window.sceneManager.updateCurrentSceneInfo();
+                } else if (typeof window.sceneManager !== 'undefined' && window.sceneManager.scenes && window.sceneManager.scenes.length === 0) {
+                    // 如果没有场景，显示创建场景提示
+                    this.showError('请先在"场景生成"页面创建一个对话场景');
+                }
+            }, 100); // 短暂延迟，确保DOM已更新
+        }
+        
         // 隐藏所有页面
         this.pages.forEach(page => {
             page.classList.remove('active');
@@ -127,10 +150,64 @@ class UiManager {
     
     // 显示反馈内容
     formatFeedback(feedbackText) {
-        // 处理反馈格式
-        return feedbackText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                          .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                          .replace(/\n/g, '<br>');
+        // 检查反馈内容是否为空
+        if (!feedbackText || feedbackText.trim() === '') {
+            return '<div class="empty-message">暂无反馈内容</div>';
+        }
+
+        let formattedHTML = '';
+        
+        // 使用正则表达式匹配形如 "1. 原句："内容"" 的模式
+        const feedbackItems = feedbackText.split(/(\d+\.\s+原句[:：])/).filter(item => item.trim() !== '');
+        
+        // 对匹配到的内容进行处理
+        for (let i = 0; i < feedbackItems.length; i += 2) {
+            if (i + 1 >= feedbackItems.length) break;
+            
+            const numberPart = feedbackItems[i]; // "1. 原句："
+            const number = numberPart.match(/\d+/)[0]; // 提取数字
+            const contentPart = feedbackItems[i + 1]; // 剩余内容
+            
+            // 提取原句、问题、建议和解释
+            const originalMatch = contentPart.match(/"([^"]+)"/) || contentPart.match(/"([^"]+)"/);
+            const original = originalMatch ? originalMatch[1] : '';
+            
+            const problemMatch = contentPart.match(/问题[:：](.+?)建议[:：]/s);
+            const problem = problemMatch ? problemMatch[1].trim() : '';
+            
+            const suggestionMatch = contentPart.match(/建议[:：](.+?)解释[:：]/s);
+            const suggestion = suggestionMatch ? suggestionMatch[1].trim() : '';
+            
+            const explanationMatch = contentPart.match(/解释[:：](.+?)(?=\d+\.\s+原句[:：]|$)/s);
+            const explanation = explanationMatch ? explanationMatch[1].trim() : '';
+            
+            // 构建HTML
+            formattedHTML += `
+                <div class="feedback-item">
+                    <div class="feedback-item-header">
+                        <div class="feedback-item-number">${number}</div>
+                    </div>
+                    <div class="feedback-section">
+                        <div class="feedback-label"><i class="fas fa-quote-left"></i> 原句</div>
+                        <div class="feedback-original">${original}</div>
+                    </div>
+                    <div class="feedback-section">
+                        <div class="feedback-label"><i class="fas fa-exclamation-circle"></i> 问题</div>
+                        <div class="feedback-problem">${problem}</div>
+                    </div>
+                    <div class="feedback-section">
+                        <div class="feedback-label"><i class="fas fa-lightbulb"></i> 建议</div>
+                        <div class="feedback-correction">${suggestion.replace(/^["'](.+)["']$/, '$1')}</div>
+                    </div>
+                    <div class="feedback-section">
+                        <div class="feedback-label"><i class="fas fa-info-circle"></i> 解释</div>
+                        <div class="feedback-explanation">${explanation}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        return formattedHTML || '<div class="empty-message">无法解析反馈内容</div>';
     }
 }
 
