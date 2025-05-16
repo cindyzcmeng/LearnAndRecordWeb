@@ -124,7 +124,30 @@ class ChatManager {
     addMessage(message, sender) {
         const messageElement = document.createElement('div');
         messageElement.className = `message ${sender}-message`;
-        messageElement.textContent = message;
+        
+        // 处理带有拼音的消息（仅适用于bot消息）
+        if (sender === 'bot') {
+            // 分离消息和拼音
+            const parts = message.split(/\[|\]/); // 用[或]分割
+            if (parts.length >= 2) {
+                // 有拼音标注
+                const messageContent = document.createElement('span');
+                messageContent.textContent = parts[0].trim(); // 原始消息部分
+                
+                const pinyinElement = document.createElement('span');
+                pinyinElement.className = 'pinyin';
+                pinyinElement.textContent = parts[1].trim(); // 拼音部分
+                
+                messageElement.appendChild(messageContent);
+                messageElement.appendChild(pinyinElement);
+            } else {
+                // 没有找到拼音标注
+                messageElement.textContent = message;
+            }
+        } else {
+            // 用户消息直接显示
+            messageElement.textContent = message;
+        }
         
         this.chatMessages.appendChild(messageElement);
         this.scrollToBottom();

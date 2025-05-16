@@ -204,6 +204,102 @@ class ApiService {
         return this.conversationHistory.filter(msg => msg.role !== 'system');
     }
     
+    // 获取场景相关表达
+    async getSceneExpressions(title, description, botRole, userRole, dialogueTask) {
+        const promptMessage = `请为以下中文学习场景生成相关表达数据，包括学习目标、关键短语、示例对话和文化背景。
+
+场景标题：${title}
+场景描述：${description}
+AI角色：${botRole}
+用户角色：${userRole}
+对话任务：${dialogueTask}
+
+要求：
+1. 学习目标：简明描述学习者通过这个场景应该学会什么语言技能和表达能力，30-60字。
+2. 关键短语：提供5-8个在这个场景中最常用的短语，每个短语必须包含中文、拼音和英文翻译。
+3. 示例对话：提供一段3-5轮的示例对话，每个对话必须包含角色、中文、拼音和英文翻译。
+4. 文化背景：简述与这个场景相关的中国文化知识点，80-120字。
+
+所有内容必须同时对中文学习者有价值，且符合实际中国人的语言使用习惯。所有拼音必须准确无误。
+
+请严格按照以下JSON格式返回（不要添加多余内容）：
+{
+  "learningObjectives": "学习目标内容",
+  "keyPhrases": [
+    {
+      "chinese": "中文短语1",
+      "pinyin": "Zhōngwén duǎnyǔ 1",
+      "english": "Chinese phrase 1"
+    },
+    // 更多短语...
+  ],
+  "exampleDialogue": [
+    {
+      "role": "角色1",
+      "chinese": "中文对话1",
+      "pinyin": "Zhōngwén duìhuà 1",
+      "english": "Chinese dialogue 1"
+    },
+    // 更多对话...
+  ],
+  "culturalBackground": "文化背景内容"
+}`;
+
+        const messages = [
+            {
+                role: 'system',
+                content: `你是一位专业的中文教学内容设计专家，精通中文及拼音标注。
+请根据用户提供的场景信息，生成适合中文学习者的相关表达和学习资料。
+只返回符合要求的JSON格式数据，不要添加任何其他解释或描述。
+确保输出是有效的JSON格式，可以被直接解析。
+拼音必须准确无误，使用标准汉语拼音。`
+            },
+            {
+                role: 'user',
+                content: promptMessage
+            }
+        ];
+        
+        const requestBody = {
+            model: 'deepseek-chat',
+            messages: messages,
+            temperature: 0.3
+        };
+        
+        try {
+            const response = await fetch(this.apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.apiKey}`
+                },
+                body: JSON.stringify(requestBody)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`API请求失败: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            const content = data.choices[0].message.content;
+            
+            try {
+                return JSON.parse(content);
+            } catch (e) {
+                console.error('解析JSON响应失败:', e);
+                // 尝试提取JSON内容
+                const match = content.match(/\{[\s\S]*\}/);
+                if (match) {
+                    return JSON.parse(match[0]);
+                }
+                throw new Error('无法解析场景表达内容');
+            }
+        } catch (error) {
+            console.error('获取场景表达内容错误:', error);
+            throw error;
+        }
+    }
+    
     // 重置对话历史
     resetConversation() {
         this.initConversation();

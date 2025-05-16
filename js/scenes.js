@@ -14,6 +14,41 @@ class SceneManager {
         this.sceneList = document.getElementById('scene-list');
         this.viewSceneDetailsBtn = document.getElementById('view-scene-details');
         
+        // 场景相关表达元素
+        this.sceneExpressions = document.getElementById('scene-expressions');
+        this.learningObjectives = document.getElementById('learning-objectives');
+        this.keyPhrases = document.getElementById('key-phrases');
+        this.exampleDialogue = document.getElementById('example-dialogue');
+        this.culturalBackground = document.getElementById('cultural-background');
+        this.backToScenesBtn = document.getElementById('back-to-scenes-btn');
+        this.startSceneChatBtn = document.getElementById('start-scene-chat-btn');
+        
+        // 检查必要元素是否存在
+        if (!this.sceneExpressions) {
+            console.error('场景相关表达容器元素不存在!');
+        }
+        if (!this.backToScenesBtn) {
+            console.error('返回场景列表按钮元素不存在!');
+        }
+        if (!this.startSceneChatBtn) {
+            console.error('开始场景对话按钮元素不存在!');
+        }
+        
+        // 使用延迟初始化，确保DOM元素完全加载
+        setTimeout(() => {
+            // 重新获取可能由于加载时机问题未找到的元素
+            if (!this.backToScenesBtn) {
+                this.backToScenesBtn = document.getElementById('back-to-scenes-btn');
+                console.log('延迟初始化 - 返回场景列表按钮:', this.backToScenesBtn);
+            }
+            if (!this.startSceneChatBtn) {
+                this.startSceneChatBtn = document.getElementById('start-scene-chat-btn');
+                console.log('延迟初始化 - 开始场景对话按钮:', this.startSceneChatBtn);
+            }
+            // 重新绑定事件
+            this.initExpressionButtonEvents();
+        }, 500);
+        
         // 预设场景数据
         this.presetScenes = [
             {
@@ -24,7 +59,42 @@ class SceneManager {
                 userRole: '初次到中国餐厅用餐的外国游客',
                 dialogueTask: '点餐并了解几道中国特色菜品的做法和原料',
                 createdAt: new Date('2023-01-01').toISOString(),
-                isPreset: true
+                isPreset: true,
+                expressions: {
+                    learningObjectives: '学习餐厅用餐常用词汇和表达，能够熟练点餐和询问菜品信息',
+                    keyPhrases: [
+                        {
+                            chinese: '请问有什么推荐的菜？',
+                            pinyin: 'Qǐngwèn yǒu shénme tuījiàn de cài?',
+                            english: 'What dishes do you recommend?'
+                        },
+                        {
+                            chinese: '这个菜是怎么做的？',
+                            pinyin: 'Zhège cài shìzěnme zuò de?',
+                            english: 'How is this dish made?'
+                        },
+                        {
+                            chinese: '我要一份...',
+                            pinyin: 'Wǒ yào yī fèn...',
+                            english: 'I would like a portion of...'
+                        }
+                    ],
+                    exampleDialogue: [
+                        {
+                            role: '服务员',
+                            chinese: '您好，欢迎光临，请问几位？',
+                            pinyin: 'Nín hǎo, huānyíng guānglín, qǐngwèn jǐ wèi?',
+                            english: 'Hello, welcome, how many people?'
+                        },
+                        {
+                            role: '顾客',
+                            chinese: '两位，请给我们一个靠窗的位置。',
+                            pinyin: 'Liǎng wèi, qǐng gěi wǒmen yīgè kào chuāng de wèizhi.',
+                            english: 'Two people, please give us a seat by the window.'
+                        }
+                    ],
+                    culturalBackground: '在中国餐厅，通常采用分享制用餐，即点多道菜放在桌子中央，每个人分享所有菜品。这与西方餐厅每人点各自餐点的方式不同。中国人非常注重用餐礼仪，如给长辈夹菜、使用公筷等。'
+                }
             },
             {
                 id: 'preset-2',
@@ -34,7 +104,42 @@ class SceneManager {
                 userRole: '感冒生病的患者',
                 dialogueTask: '描述感冒症状并咨询治疗方案和注意事项',
                 createdAt: new Date('2023-01-02').toISOString(),
-                isPreset: true
+                isPreset: true,
+                expressions: {
+                    learningObjectives: '学习医院就诊相关词汇和表达，能够准确描述症状并理解医嘱',
+                    keyPhrases: [
+                        {
+                            chinese: '我感觉不舒服',
+                            pinyin: 'Wǒ gǎnjué bù shūfu',
+                            english: 'I feel unwell'
+                        },
+                        {
+                            chinese: '有什么症状？',
+                            pinyin: 'Yǒu shénme zhèngzhuàng?',
+                            english: 'What symptoms do you have?'
+                        },
+                        {
+                            chinese: '需要吃什么药？',
+                            pinyin: 'Xūyào chī shénme yào?',
+                            english: 'What medicine should I take?'
+                        }
+                    ],
+                    exampleDialogue: [
+                        {
+                            role: '医生',
+                            chinese: '请问哪里不舒服？',
+                            pinyin: 'Qǐngwèn nǎlǐ bù shūfu?',
+                            english: 'Where do you feel unwell?'
+                        },
+                        {
+                            role: '患者',
+                            chinese: '我昨天开始发烧和咳嗽',
+                            pinyin: 'Wǒ zuótiān kāishǐ fāshāo hé késou',
+                            english: 'I started having a fever and cough yesterday'
+                        }
+                    ],
+                    culturalBackground: '在中国看病时，医生会详细询问患者的症状和病史。中医和西医都很普及，病人可以选择不同的治疗方式。中国人看病通常会很重视预防和调养。'
+                }
             },
             {
                 id: 'preset-3',
@@ -44,7 +149,42 @@ class SceneManager {
                 userRole: '想要购买纪念品的游客',
                 dialogueTask: '询问商品价格，讨价还价，并了解商品特色',
                 createdAt: new Date('2023-01-03').toISOString(),
-                isPreset: true
+                isPreset: true,
+                expressions: {
+                    learningObjectives: '学习购物和讨价还价的常用词汇和表达，掌握中国特色的购物文化',
+                    keyPhrases: [
+                        {
+                            chinese: '这个多少钱？',
+                            pinyin: 'Zhège duōshao qián?',
+                            english: 'How much is this?'
+                        },
+                        {
+                            chinese: '能便宜一点吗？',
+                            pinyin: 'Néng piányí yīdiǎn ma?',
+                            english: 'Can you make it cheaper?'
+                        },
+                        {
+                            chinese: '太贵了',
+                            pinyin: 'Tài guì le',
+                            english: "That's too expensive"
+                        }
+                    ],
+                    exampleDialogue: [
+                        {
+                            role: '摊主',
+                            chinese: '这个是纯手工制作的，很精致',
+                            pinyin: 'Zhège shì chún shǒugōng zhìzuò de, hěn jīngzhì',
+                            english: 'This is handmade, very exquisite'
+                        },
+                        {
+                            role: '游客',
+                            chinese: '能不能便宜一点？',
+                            pinyin: 'Néng bùnéng piányí yīdiǎn?',
+                            english: 'Can you make it a bit cheaper?'
+                        }
+                    ],
+                    culturalBackground: '在中国的传统市场，讨价还价是很常见的购物方式。这不仅是一种交易方式，也是一种社交活动。买家和卖家通过讨价还价建立互动，体现了中国特色的购物文化。'
+                }
             },
             {
                 id: 'preset-4',
@@ -54,7 +194,42 @@ class SceneManager {
                 userRole: '刚到达宾馆的旅客',
                 dialogueTask: '办理入住手续，询问宾馆设施和周边景点',
                 createdAt: new Date('2023-01-04').toISOString(),
-                isPreset: true
+                isPreset: true,
+                expressions: {
+                    learningObjectives: '学习酒店入住相关词汇和表达，掌握预订房间和咨询服务的对话技能',
+                    keyPhrases: [
+                        {
+                            chinese: '我要办理入住',
+                            pinyin: 'Wǒ yào bànlǐ rùzhù',
+                            english: 'I want to check in'
+                        },
+                        {
+                            chinese: '有空房间吗？',
+                            pinyin: 'Yǒu kōng fángjiān ma?',
+                            english: 'Do you have any vacant rooms?'
+                        },
+                        {
+                            chinese: '退房时间是几点？',
+                            pinyin: 'Tuìfáng shíjiān shì jǐ diǎn?',
+                            english: 'What time is check-out?'
+                        }
+                    ],
+                    exampleDialogue: [
+                        {
+                            role: '前台',
+                            chinese: '您好，请出示您的护照',
+                            pinyin: 'Nín hǎo, qǐng chūshì nín de hùzhào',
+                            english: 'Hello, please show your passport'
+                        },
+                        {
+                            role: '旅客',
+                            chinese: '我预订了一间双人房',
+                            pinyin: 'Wǒ yùdìng le yī jiān shuāngrén fáng',
+                            english: 'I booked a double room'
+                        }
+                    ],
+                    culturalBackground: '在中国的宾馆，服务人员通常会很注重礼节和服务细节。入住时需要出示有效证件，如护照或身份证。许多宾馆都提供免费的茶水和拖鞋等中国特色服务。'
+                }
             },
             {
                 id: 'preset-5',
@@ -64,7 +239,42 @@ class SceneManager {
                 userRole: '迷路的旅行者',
                 dialogueTask: '询问到达景点的路线、交通方式和所需时间',
                 createdAt: new Date('2023-01-05').toISOString(),
-                isPreset: true
+                isPreset: true,
+                expressions: {
+                    learningObjectives: '学习问路和指路的常用词汇和表达，掌握描述位置和方向的语言技能',
+                    keyPhrases: [
+                        {
+                            chinese: '请问怎么走？',
+                            pinyin: 'Qǐngwèn zěnme zǒu?',
+                            english: 'Excuse me, how do I get there?'
+                        },
+                        {
+                            chinese: '往哪个方向？',
+                            pinyin: 'Wǎng nǎge fāngxiàng?',
+                            english: 'Which direction?'
+                        },
+                        {
+                            chinese: '要多长时间？',
+                            pinyin: 'Yào duō cháng shíjiān?',
+                            english: 'How long does it take?'
+                        }
+                    ],
+                    exampleDialogue: [
+                        {
+                            role: '当地居民',
+                            chinese: '往前走到红绿灯，然后右转',
+                            pinyin: 'Wǎng qián zǒu dào hónglǜdēng, ránhòu yòu zhuǎn',
+                            english: 'Walk forward to the traffic light, then turn right'
+                        },
+                        {
+                            role: '旅行者',
+                            chinese: '那里有地铁站吗？',
+                            pinyin: 'Nàli yǒu dìtiě zhàn ma?',
+                            english: 'Is there a subway station there?'
+                        }
+                    ],
+                    culturalBackground: '在中国问路时，当地人通常都很热心帮助。他们可能会用手势配合说明方向，有时甚至会主动带路。问路时使用礼貌用语很重要，这体现了中国人的礼仪文化。'
+                }
             }
         ];
         
@@ -77,6 +287,11 @@ class SceneManager {
     
     // 初始化事件监听器
     initEventListeners() {
+        // 检查元素是否存在
+        console.log('初始化事件监听器...');
+        console.log('backToScenesBtn元素:', this.backToScenesBtn);
+        console.log('startSceneChatBtn元素:', this.startSceneChatBtn);
+        
         // 生成场景按钮
         this.generateSceneBtn.addEventListener('click', () => {
             this.generateScene();
@@ -86,6 +301,28 @@ class SceneManager {
         this.startDialogueBtn.addEventListener('click', () => {
             this.startDialogue();
         });
+        
+        // 返回场景列表按钮
+        if (this.backToScenesBtn) {
+            this.backToScenesBtn.addEventListener('click', (e) => {
+                console.log('返回场景列表按钮被点击');
+                e.preventDefault();
+                this.hideSceneExpressions();
+            });
+        } else {
+            console.error('返回场景列表按钮元素不存在!');
+        }
+        
+        // 开始场景对话按钮
+        if (this.startSceneChatBtn) {
+            this.startSceneChatBtn.addEventListener('click', (e) => {
+                console.log('开始场景对话按钮被点击');
+                e.preventDefault();
+                this.startChat();
+            });
+        } else {
+            console.error('开始场景对话按钮元素不存在!');
+        }
         
         // 刷新场景按钮
         const refreshScenesBtn = document.getElementById('refresh-scenes-btn');
@@ -123,6 +360,44 @@ class SceneManager {
                 }
             }
         });
+
+        // 使用事件委托，为所有动态添加的按钮绑定事件
+        document.addEventListener('click', (e) => {
+            // 检查是否点击了返回场景列表按钮
+            if (e.target && (e.target.id === 'back-to-scenes-btn' || 
+                (e.target.parentElement && e.target.parentElement.id === 'back-to-scenes-btn'))) {
+                console.log('通过事件委托捕获到返回场景列表点击');
+                this.hideSceneExpressions();
+            }
+            
+            // 检查是否点击了开始场景对话按钮
+            if (e.target && (e.target.id === 'start-scene-chat-btn' || 
+                (e.target.parentElement && e.target.parentElement.id === 'start-scene-chat-btn'))) {
+                console.log('通过事件委托捕获到开始场景对话点击');
+                this.startChat();
+            }
+        });
+    }
+    
+    // 初始化表达界面按钮事件（延迟初始化时使用）
+    initExpressionButtonEvents() {
+        if (this.backToScenesBtn) {
+            console.log('延迟初始化 - 绑定返回场景列表按钮事件');
+            this.backToScenesBtn.addEventListener('click', (e) => {
+                console.log('返回场景列表按钮被点击（延迟绑定）');
+                e.preventDefault();
+                this.hideSceneExpressions();
+            });
+        }
+        
+        if (this.startSceneChatBtn) {
+            console.log('延迟初始化 - 绑定开始场景对话按钮事件');
+            this.startSceneChatBtn.addEventListener('click', (e) => {
+                console.log('开始场景对话按钮被点击（延迟绑定）');
+                e.preventDefault();
+                this.startChat();
+            });
+        }
     }
     
     // 加载保存的场景
@@ -189,29 +464,197 @@ class SceneManager {
     setCurrentScene(scene) {
         this.currentScene = scene;
         localStorage.setItem(CONFIG.STORAGE_KEYS.CURRENT_SCENE, scene.id);
-        this.updateCurrentSceneInfo();
-        this.updateViewDetailsButtonState();
+        
+        // 显示场景相关表达
+        this.displaySceneExpressions(scene);
     }
     
-    // 更新当前场景信息
-    updateCurrentSceneInfo() {
-        if (this.currentScene) {
-            document.getElementById('current-scene-title').textContent = this.currentScene.title;
-            document.querySelector('.current-scene-info').classList.remove('hidden');
+    // 显示场景相关表达
+    displaySceneExpressions(scene) {
+        // 隐藏场景选择区域，显示场景相关表达区域
             document.getElementById('scene-selection').classList.add('hidden');
-            document.getElementById('chat-container').classList.remove('hidden');
+        // 确保场景列表完全隐藏
+        this.sceneList.classList.add('hidden');
+        // 显示表达界面
+        this.sceneExpressions.classList.remove('hidden');
+        
+        // 更新UI：隐藏当前场景信息（如果显示）
+        document.querySelector('.current-scene-info').classList.add('hidden');
+        
+        // 确保聊天容器也隐藏
+        document.getElementById('chat-container').classList.add('hidden');
+        
+        if (scene.expressions) {
+            // 已有表达数据，直接显示
+            this.renderExpressions(scene.expressions);
+        } else {
+            // 没有表达数据，需要生成
+            this.generateSceneExpressions(scene);
+        }
+    }
+    
+    // 渲染表达数据
+    renderExpressions(expressions) {
+        // 渲染学习目标
+        this.learningObjectives.innerHTML = `<p>${expressions.learningObjectives}</p>`;
+        
+        // 渲染关键短语
+        this.keyPhrases.innerHTML = '';
+        expressions.keyPhrases.forEach(phrase => {
+            const phraseElement = document.createElement('div');
+            phraseElement.className = 'key-phrase';
+            phraseElement.innerHTML = `
+                <div class="key-phrase-chinese">${phrase.chinese}</div>
+                <div class="key-phrase-pinyin">${phrase.pinyin}</div>
+                <div class="key-phrase-english">${phrase.english}</div>
+            `;
+            this.keyPhrases.appendChild(phraseElement);
+        });
             
-            // 重置对话
-            apiService.resetConversation();
+        // 渲染示例对话
+        this.exampleDialogue.innerHTML = '';
+        expressions.exampleDialogue.forEach(dialogue => {
+            const dialogueElement = document.createElement('div');
+            dialogueElement.className = 'example-dialogue-item';
+            dialogueElement.innerHTML = `
+                <div class="dialogue-role">${dialogue.role}:</div>
+                <div class="dialogue-content">
+                    <div class="dialogue-chinese">${dialogue.chinese}</div>
+                    <div class="dialogue-pinyin">${dialogue.pinyin}</div>
+                    <div class="dialogue-english">${dialogue.english}</div>
+                </div>
+            `;
+            this.exampleDialogue.appendChild(dialogueElement);
+        });
             
-            // 添加场景信息到对话
-            const sceneInfo = `情景：你是${this.currentScene.botRole}，我是${this.currentScene.userRole}。我的任务是${this.currentScene.dialogueTask}。请你严格扮演你的角色，用自然的中文与我对话。`;
+        // 渲染文化背景
+        this.culturalBackground.innerHTML = `
+            <div class="cultural-background-content">
+                <p>${expressions.culturalBackground}</p>
+            </div>
+        `;
+    }
+    
+    // 生成场景相关表达
+    async generateSceneExpressions(scene) {
+        try {
+            uiManager.showLoading();
             
-            // 发送场景信息作为系统消息
-            chatManager.addSystemMessage(sceneInfo);
+            console.log('正在生成场景表达数据...', {
+                title: scene.title,
+                description: scene.description
+            });
             
-            // 自动发送一条欢迎消息
-            chatManager.sendInitialBotMessage();
+            // 调用API生成场景表达内容
+            const expressions = await apiService.getSceneExpressions(scene.title, scene.description, scene.botRole, scene.userRole, scene.dialogueTask);
+            
+            console.log('获取到的场景表达数据:', expressions);
+            
+            // 使用默认数据作为备份，防止API返回不完整
+            const defaultExpressions = {
+                learningObjectives: "学习在此场景中常用的词汇和表达，掌握相关对话技能",
+                keyPhrases: [
+                    {
+                        chinese: "您好，请问有什么可以帮助您？",
+                        pinyin: "Nín hǎo, qǐngwèn yǒu shénme kěyǐ bāngzhù nín?",
+                        english: "Hello, how may I help you?"
+                    },
+                    {
+                        chinese: "谢谢您的帮助",
+                        pinyin: "Xièxie nín de bāngzhù",
+                        english: "Thank you for your help"
+                    }
+                ],
+                exampleDialogue: [
+                    {
+                        role: scene.botRole,
+                        chinese: "您好，有什么需要帮助的吗？",
+                        pinyin: "Nín hǎo, yǒu shénme xūyào bāngzhù de ma?",
+                        english: "Hello, do you need any help?"
+                    },
+                    {
+                        role: scene.userRole,
+                        chinese: "您好，我想了解一下...",
+                        pinyin: "Nín hǎo, wǒ xiǎng liǎojiě yīxià...",
+                        english: "Hello, I'd like to know about..."
+                    }
+                ],
+                culturalBackground: "这是中国文化背景的基本描述，会随着具体场景而有所不同。"
+            };
+            
+            // 合并API返回的数据和默认数据，确保数据完整
+            const mergedExpressions = {
+                learningObjectives: expressions.learningObjectives || defaultExpressions.learningObjectives,
+                keyPhrases: expressions.keyPhrases && expressions.keyPhrases.length > 0 ? 
+                    expressions.keyPhrases : defaultExpressions.keyPhrases,
+                exampleDialogue: expressions.exampleDialogue && expressions.exampleDialogue.length > 0 ? 
+                    expressions.exampleDialogue : defaultExpressions.exampleDialogue,
+                culturalBackground: expressions.culturalBackground || defaultExpressions.culturalBackground
+            };
+            
+            // 保存表达数据到场景对象
+            scene.expressions = mergedExpressions;
+            this.saveScenes();
+            
+            // 渲染表达数据
+            this.renderExpressions(mergedExpressions);
+            
+            uiManager.hideLoading();
+        } catch (error) {
+            console.error('生成场景表达失败:', error);
+            
+            // 创建一个基本的表达数据作为备用
+            const fallbackExpressions = {
+                learningObjectives: `学习在${scene.title}场景中的常用词汇和表达，掌握相关对话技能。`,
+                keyPhrases: [
+                    {
+                        chinese: "您好，请问有什么可以帮助您？",
+                        pinyin: "Nín hǎo, qǐngwèn yǒu shénme kěyǐ bāngzhù nín?",
+                        english: "Hello, how may I help you?"
+                    },
+                    {
+                        chinese: "谢谢您的帮助",
+                        pinyin: "Xièxie nín de bāngzhù",
+                        english: "Thank you for your help"
+                    },
+                    {
+                        chinese: "我想了解更多信息",
+                        pinyin: "Wǒ xiǎng liǎojiě gèng duō xìnxī",
+                        english: "I would like to know more information"
+                    }
+                ],
+                exampleDialogue: [
+                    {
+                        role: scene.botRole,
+                        chinese: "您好，欢迎光临，有什么可以帮您？",
+                        pinyin: "Nín hǎo, huānyíng guānglín, yǒu shénme kěyǐ bāng nín?",
+                        english: "Hello, welcome, how may I help you?"
+                    },
+                    {
+                        role: scene.userRole,
+                        chinese: "您好，我想了解一下...",
+                        pinyin: "Nín hǎo, wǒ xiǎng liǎojiě yīxià...",
+                        english: "Hello, I'd like to know about..."
+                    },
+                    {
+                        role: scene.botRole,
+                        chinese: "没问题，很乐意为您解答。",
+                        pinyin: "Méi wèntí, hěn lèyì wèi nín jiědá.",
+                        english: "No problem, I'm happy to answer for you."
+                    }
+                ],
+                culturalBackground: `在${scene.title}场景中，了解中国的礼仪和交流习惯很重要。中国人注重礼貌、尊重和面子，交流时通常以礼相待。`
+            };
+            
+            // 保存备用数据
+            scene.expressions = fallbackExpressions;
+            this.saveScenes();
+            
+            // 渲染备用数据
+            this.renderExpressions(fallbackExpressions);
+            
+            uiManager.hideLoading();
+            uiManager.showError('生成详细场景表达失败，已使用基本数据替代。');
         }
     }
     
@@ -239,7 +682,8 @@ class SceneManager {
                 botRole: cardContent.botRole,
                 userRole: cardContent.userRole,
                 dialogueTask: cardContent.dialogueTask,
-                createdAt: new Date().toISOString()
+                createdAt: new Date().toISOString(),
+                expressions: null // 先设为null，稍后生成
             };
             
             // 更新UI
@@ -254,10 +698,50 @@ class SceneManager {
             this.renderSceneList();
             
             uiManager.hideLoading();
+            
+            // 提示用户生成成功，点击后直接进入场景表达界面
+            uiManager.showModal(`
+                <div class="success-message">
+                    <h3>场景生成成功</h3>
+                    <p>已创建新场景: ${scene.title}</p>
+                    <button class="primary-btn" onclick="uiManager.hideModal(); sceneManager.setCurrentScene(sceneManager.scenes[sceneManager.scenes.length-1]);">查看场景详情</button>
+                </div>
+            `);
         } catch (error) {
             uiManager.hideLoading();
             uiManager.showError('生成场景失败: ' + error.message);
         }
+    }
+    
+    // 隐藏场景相关表达
+    hideSceneExpressions() {
+        console.log('执行hideSceneExpressions方法...');
+        
+        // 隐藏场景相关表达界面
+        this.sceneExpressions.classList.add('hidden');
+        
+        // 显示场景选择界面和场景列表
+        const sceneSelection = document.getElementById('scene-selection');
+        sceneSelection.classList.remove('hidden');
+        this.sceneList.classList.remove('hidden');
+        
+        // 直接设置页面类
+        const dialoguePage = document.getElementById('dialogue');
+        document.querySelectorAll('.page').forEach(page => {
+            page.classList.remove('active');
+        });
+        dialoguePage.classList.add('active');
+        
+        // 更新导航栏状态
+        document.querySelectorAll('.main-nav li').forEach(item => {
+            if (item.getAttribute('data-page') === 'dialogue') {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+        
+        console.log('返回场景列表完成');
     }
     
     // 开始对话
@@ -269,9 +753,76 @@ class SceneManager {
         
         // 设置为当前场景
         this.setCurrentScene(latestScene);
+    }
+    
+    // 开始场景对话
+    startChat() {
+        console.log('执行startChat方法...');
         
-        // 导航到对话页面
-        uiManager.navigateTo('dialogue');
+        if (!this.currentScene) {
+            console.error('没有选择场景！');
+            return;
+        }
+        
+        // 隐藏场景相关表达界面
+        this.sceneExpressions.classList.add('hidden');
+        
+        // 更新当前场景信息
+        document.getElementById('current-scene-title').textContent = this.currentScene.title;
+        document.querySelector('.current-scene-info').classList.remove('hidden');
+        document.getElementById('chat-container').classList.remove('hidden');
+        document.getElementById('scene-selection').classList.add('hidden');
+        
+        // 直接设置页面类
+        const dialoguePage = document.getElementById('dialogue');
+        document.querySelectorAll('.page').forEach(page => {
+            page.classList.remove('active');
+        });
+        dialoguePage.classList.add('active');
+        
+        // 更新导航栏状态
+        document.querySelectorAll('.main-nav li').forEach(item => {
+            if (item.getAttribute('data-page') === 'dialogue') {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+        
+        // 重置对话
+        apiService.resetConversation();
+        
+        // 添加场景信息到对话
+        const sceneInfo = `情景：你是${this.currentScene.botRole}，我是${this.currentScene.userRole}。我的任务是${this.currentScene.dialogueTask}。请你严格扮演你的角色，用自然的中文与我对话。请在你的每个回复后面，另起一行添加你的回复用拼音注音，用方括号括起来。`;
+        
+        // 发送场景信息作为系统消息
+        chatManager.addSystemMessage(sceneInfo);
+        
+        // 自动发送一条欢迎消息
+        chatManager.sendInitialBotMessage();
+        
+        console.log('开始对话完成');
+    }
+    
+    // 更新当前场景信息
+    updateCurrentSceneInfo() {
+        if (this.currentScene) {
+            document.getElementById('current-scene-title').textContent = this.currentScene.title;
+            document.querySelector('.current-scene-info').classList.remove('hidden');
+            document.getElementById('chat-container').classList.remove('hidden');
+            
+            // 重置对话
+            apiService.resetConversation();
+            
+            // 添加场景信息到对话
+            const sceneInfo = `情景：你是${this.currentScene.botRole}，我是${this.currentScene.userRole}。我的任务是${this.currentScene.dialogueTask}。请你严格扮演你的角色，用自然的中文与我对话。请在你的每个回复后面，另起一行添加你的回复用拼音注音，用方括号括起来。`;
+            
+            // 发送场景信息作为系统消息
+            chatManager.addSystemMessage(sceneInfo);
+            
+            // 自动发送一条欢迎消息
+            chatManager.sendInitialBotMessage();
+        }
     }
     
     // 渲染场景列表

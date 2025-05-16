@@ -60,4 +60,106 @@ window.addEventListener('unhandledrejection', (event) => {
         uiManager.showError('应用错误: ' + event.reason.message);
     }
     return false;
+});
+
+// 添加全局事件监听器，确保所有按钮点击可以被捕获
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM完全加载，添加全局事件监听');
+    
+    // 为场景相关表达界面的按钮添加全局事件监听
+    document.addEventListener('click', function(e) {
+        // 检查是否点击了返回场景列表按钮
+        if (e.target && (e.target.id === 'back-to-scenes-btn' || 
+            (e.target.parentElement && e.target.parentElement.id === 'back-to-scenes-btn'))) {
+            console.log('全局监听器: 返回场景列表按钮点击');
+            
+            // 隐藏场景相关表达界面
+            const sceneExpressions = document.getElementById('scene-expressions');
+            if (sceneExpressions) {
+                sceneExpressions.classList.add('hidden');
+            }
+            
+            // 显示场景选择界面
+            const sceneSelection = document.getElementById('scene-selection');
+            if (sceneSelection) {
+                sceneSelection.classList.remove('hidden');
+            }
+            
+            // 显示场景列表
+            const sceneList = document.getElementById('scene-list');
+            if (sceneList) {
+                sceneList.classList.remove('hidden');
+            }
+            
+            // 确保对话页面是活动的
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            const dialoguePage = document.getElementById('dialogue');
+            if (dialoguePage) {
+                dialoguePage.classList.add('active');
+            }
+            
+            // 更新导航栏
+            document.querySelectorAll('.main-nav li').forEach(item => {
+                if (item.getAttribute('data-page') === 'dialogue') {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+        
+        // 检查是否点击了开始场景对话按钮
+        if (e.target && (e.target.id === 'start-scene-chat-btn' || 
+            (e.target.parentElement && e.target.parentElement.id === 'start-scene-chat-btn'))) {
+            console.log('全局监听器: 开始场景对话按钮点击');
+            
+            // 隐藏场景相关表达界面
+            const sceneExpressions = document.getElementById('scene-expressions');
+            if (sceneExpressions) {
+                sceneExpressions.classList.add('hidden');
+            }
+            
+            // 隐藏场景选择界面
+            const sceneSelection = document.getElementById('scene-selection');
+            if (sceneSelection) {
+                sceneSelection.classList.add('hidden');
+            }
+            
+            // 显示当前场景信息和聊天容器
+            const currentSceneInfo = document.querySelector('.current-scene-info');
+            if (currentSceneInfo) {
+                currentSceneInfo.classList.remove('hidden');
+            }
+            
+            const chatContainer = document.getElementById('chat-container');
+            if (chatContainer) {
+                chatContainer.classList.remove('hidden');
+            }
+            
+            // 确保对话页面是活动的
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            const dialoguePage = document.getElementById('dialogue');
+            if (dialoguePage) {
+                dialoguePage.classList.add('active');
+            }
+            
+            // 更新导航栏
+            document.querySelectorAll('.main-nav li').forEach(item => {
+                if (item.getAttribute('data-page') === 'dialogue') {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            
+            // 尝试调用场景管理器的方法
+            if (window.sceneManager && window.sceneManager.startChat) {
+                window.sceneManager.startChat();
+            }
+        }
+    });
 }); 

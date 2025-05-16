@@ -618,26 +618,164 @@ textarea {
 
 .diary-actions {
     display: flex;
-    justify-content: flex-end;
-}
-/*
-.audio-container {
-    margin-bottom: 1.5rem;
-    background-color: var(--secondary-color);
-    padding: 1.5rem;
-    border-radius: var(--border-radius);
+    justify-content: center;
+    margin-top: 2rem;
 }
 
-.audio-container h3 {
+/* 场景相关表达样式 */
+.scene-expressions {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: white;
+    border-radius: var(--card-radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    animation: fadeIn 0.3s ease-in-out;
+    position: relative;
+    z-index: 10;
+    height: auto;
+    min-height: 60vh;
+}
+
+.scene-expressions .page-header {
+    padding: 1rem 1.5rem;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 11;
+}
+
+.scene-expressions .page-header button {
+    margin: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.scene-expressions .page-header .text-btn {
+    color: white;
+    font-weight: 600;
+    padding: 0.6rem 1rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.scene-expressions .page-header .text-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.scene-expressions .page-header .primary-btn {
+    padding: 0.6rem 1.2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.scene-expressions .page-header .primary-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.expressions-content {
+    padding: 1.5rem;
+    overflow-y: auto;
+    max-height: calc(90vh - 60px); /* 减去header高度 */
+}
+
+.expressions-content h3 {
+    color: var(--primary-color);
+    margin-bottom: 0.8rem;
+    margin-top: 1.5rem;
+    font-size: 1.3rem;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+}
+
+.expressions-content h3:first-child {
+    margin-top: 0;
+}
+
+.section-content {
+    margin-bottom: 1.5rem;
+}
+
+.key-phrase {
+    background-color: #f9f9f9;
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+}
+
+.key-phrase:last-child {
+    margin-bottom: 0;
+}
+
+.key-phrase-chinese {
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 0.3rem;
+}
+
+.key-phrase-pinyin {
+    color: #3498DB; /* 修改为主色调 */
+    margin-bottom: 0.3rem;
+}
+
+.key-phrase-english {
+    color: var(--light-text);
+}
+
+.example-dialogue-item {
+    display: flex;
     margin-bottom: 1rem;
+}
+
+.example-dialogue-item:last-child {
+    margin-bottom: 0;
+}
+
+.dialogue-role {
+    font-weight: bold;
+    min-width: 60px;
     color: var(--primary-color);
 }
 
-.audio-container audio {
-    width: 100%;
+.dialogue-content {
+    flex: 1;
 }
-*/
-/* 工具类 */
+
+.dialogue-chinese {
+    margin-bottom: 0.3rem;
+}
+
+.dialogue-pinyin {
+    color: #3498DB; /* 修改为主色调 */
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+}
+
+.dialogue-english {
+    color: var(--light-text);
+    font-size: 0.9rem;
+}
+
+.cultural-background-content {
+    background-color: #f9f9f9;
+    border-radius: var(--border-radius);
+    padding: 1rem;
+    border-left: 3px solid var(--primary-color);
+}
+
+.bot-message .pinyin {
+    display: block;
+    font-size: 0.8rem;
+    color: #3498DB; /* 修改为主色调 */
+    margin-top: 0.3rem;
+}
+
+/* 隐藏类 */
 .hidden {
     display: none !important;
 }
