@@ -205,7 +205,7 @@ class SceneManager {
             apiService.resetConversation();
             
             // 添加场景信息到对话
-            const sceneInfo = `情景：我是${this.currentScene.botRole}，你是${this.currentScene.userRole}。你的任务是${this.currentScene.dialogueTask}。请开始对话。`;
+            const sceneInfo = `情景：你是${this.currentScene.botRole}，我是${this.currentScene.userRole}。我的任务是${this.currentScene.dialogueTask}。请你严格扮演你的角色，用自然的中文与我对话。`;
             
             // 发送场景信息作为系统消息
             chatManager.addSystemMessage(sceneInfo);

@@ -59,7 +59,7 @@ class ApiService {
 
 请按照以下格式输出反馈：
 1. 原句："用户原句"
-   问题：词汇偏误/语法偏误（需指出具体语法点）；整体偏误/局部偏误；显性偏误/隐性偏误（若为隐性偏误，则归为“没有明显错误”）
+   问题：词汇偏误/语法偏误（需指出具体语法点）；整体偏误/局部偏误；显性偏误/隐性偏误（若为隐性偏误，则归为"没有明显错误"）
    建议："更自然的表达"
    解释：简短的语法解释或使用规则
    
@@ -207,6 +207,29 @@ class ApiService {
     // 重置对话历史
     resetConversation() {
         this.initConversation();
+    }
+
+    // 添加系统消息
+    updateSystemPrompt(customPrompt) {
+        // 如果对话历史为空，初始化它
+        if (this.conversationHistory.length === 0) {
+            this.initConversation();
+        }
+        
+        // 替换第一条系统消息或添加新的系统消息
+        if (this.conversationHistory.length > 0 && this.conversationHistory[0].role === 'system') {
+            // 更新现有的系统消息
+            this.conversationHistory[0].content = this.systemPrompt + "\n\n" + customPrompt;
+        } else {
+            // 如果第一条不是系统消息，在开头添加一条
+            this.conversationHistory.unshift({
+                role: 'system',
+                content: this.systemPrompt + "\n\n" + customPrompt
+            });
+        }
+        
+        // 保存更新后的对话历史
+        this.saveConversationHistory();
     }
 }
 

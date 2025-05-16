@@ -202,8 +202,8 @@ class ChatManager {
     
     // 添加系统消息（不显示在界面上）
     addSystemMessage(message) {
-        // 这个消息不会显示在界面上，只会发送到API
-        apiService.sendMessage(message);
+        // 使用新的updateSystemPrompt方法更新系统消息
+        apiService.updateSystemPrompt(message);
     }
     
     // 发送初始机器人消息
