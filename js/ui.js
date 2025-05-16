@@ -36,6 +36,29 @@ class UiManager {
     
     // 页面导航
     navigateTo(pageName) {
+        // 如果当前正在聊天，先结束对话
+        const chatContainer = document.getElementById('chat-container');
+        if (chatContainer && !chatContainer.classList.contains('hidden') && typeof window.chatManager !== 'undefined' && pageName !== 'dialogue') {
+            // 清空聊天记录
+            window.chatManager.chatMessages.innerHTML = '';
+            window.chatManager.messageCount = 0;
+            
+            // 重置API对话历史
+            if (typeof window.apiService !== 'undefined') {
+                window.apiService.resetConversation();
+            }
+            
+            // 隐藏相关UI元素
+            const currentSceneInfo = document.querySelector('.current-scene-info');
+            if (currentSceneInfo) currentSceneInfo.classList.add('hidden');
+            chatContainer.classList.add('hidden');
+            if (window.chatManager.feedbackContainer) {
+                window.chatManager.feedbackContainer.classList.add('hidden');
+            }
+            
+            console.log('导航离开chat界面，已重置对话状态');
+        }
+        
         // 特殊处理：如果导航到对话页面，检查是否有选择场景
         if (pageName === 'dialogue') {
             // 在页面切换后检查场景，确保所有脚本都已加载
@@ -44,10 +67,21 @@ class UiManager {
                 const currentSceneInfo = document.querySelector('.current-scene-info');
                 const sceneSelection = document.getElementById('scene-selection');
                 const chatContainer = document.getElementById('chat-container');
+                const sceneExpressions = document.getElementById('scene-expressions');
+                const sceneList = document.getElementById('scene-list');
                 
+                // 隐藏场景相关表达界面
+                if (sceneExpressions) sceneExpressions.classList.add('hidden');
+                
+                // 隐藏当前场景信息和聊天容器
                 if (currentSceneInfo) currentSceneInfo.classList.add('hidden');
-                if (sceneSelection) sceneSelection.classList.remove('hidden');
                 if (chatContainer) chatContainer.classList.add('hidden');
+                
+                // 显示场景选择界面和场景列表
+                if (sceneSelection) sceneSelection.classList.remove('hidden');
+                if (sceneList) sceneList.classList.remove('hidden');
+                
+                console.log('导航到对话页面，恢复场景列表显示');
                 
                 // 如果sceneManager已定义且存在currentScene，则显示对话界面
                 if (typeof window.sceneManager !== 'undefined' && window.sceneManager.currentScene) {
@@ -217,4 +251,7 @@ function navigateTo(pageName) {
 }
 
 // 创建UI管理器实例
-const uiManager = new UiManager(); 
+const uiManager = new UiManager();
+
+// 将UI管理器绑定到全局window对象，确保在HTML的onclick事件中可以访问
+window.uiManager = uiManager;

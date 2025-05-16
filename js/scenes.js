@@ -49,7 +49,20 @@ class SceneManager {
             this.initExpressionButtonEvents();
         }, 500);
         
-        // 预设场景数据
+        // 初始化事件监听器
+        this.initEventListeners();
+        
+        // 定义预设场景数据
+        this.initPresetScenes();
+        
+        // 加载场景
+        this.resetScenesCache(false);
+        this.loadScenes();
+    }
+    
+    // 初始化预设场景
+    initPresetScenes() {
+        // 确保所有预设场景都有isPreset=true标记
         this.presetScenes = [
             {
                 id: 'preset-1',
@@ -278,24 +291,32 @@ class SceneManager {
             }
         ];
         
-        // 修改为默认不清除缓存
-        this.resetScenesCache(false);
+        // 确保每个预设场景都有isPreset标记
+        this.presetScenes.forEach(scene => {
+            scene.isPreset = true;
+        });
         
-        this.loadScenes();
-        this.initEventListeners();
+        console.log('预设场景初始化完成，共', this.presetScenes.length, '个场景');
     }
     
     // 初始化事件监听器
     initEventListeners() {
         // 检查元素是否存在
         console.log('初始化事件监听器...');
+        console.log('generateSceneBtn元素:', this.generateSceneBtn);
         console.log('backToScenesBtn元素:', this.backToScenesBtn);
         console.log('startSceneChatBtn元素:', this.startSceneChatBtn);
         
         // 生成场景按钮
-        this.generateSceneBtn.addEventListener('click', () => {
-            this.generateScene();
-        });
+        if (this.generateSceneBtn) {
+            console.log('为生成场景按钮添加点击事件监听器');
+            this.generateSceneBtn.addEventListener('click', () => {
+                console.log('生成场景按钮被点击');
+                this.generateScene();
+            });
+        } else {
+            console.error('生成场景按钮元素不存在!');
+        }
         
         // 开始对话按钮
         this.startDialogueBtn.addEventListener('click', () => {
@@ -405,13 +426,16 @@ class SceneManager {
         // 先清空场景列表
         this.scenes = [];
         
+        console.log('开始加载场景...');
+        
         // 获取用户自定义场景
         let userScenes = [];
         const savedScenes = localStorage.getItem(CONFIG.STORAGE_KEYS.SCENES);
         if (savedScenes) {
             try {
                 // 筛选出非预设场景（用户自定义场景）
-                userScenes = JSON.parse(savedScenes).filter(scene => !scene.isPreset);
+                const parsedScenes = JSON.parse(savedScenes);
+                userScenes = parsedScenes.filter(scene => !scene.isPreset);
                 console.log(`找到${userScenes.length}个用户自定义场景`);
             } catch (e) {
                 console.error('无法解析保存的场景:', e);
@@ -419,8 +443,18 @@ class SceneManager {
             }
         }
         
+        // 确保预设场景存在
+        console.log('当前预设场景数量:', this.presetScenes ? this.presetScenes.length : 0);
+        
         // 合并预设场景和用户场景
-        this.scenes = [...this.presetScenes, ...userScenes];
+        if (this.presetScenes && this.presetScenes.length > 0) {
+            this.scenes = [...this.presetScenes, ...userScenes];
+            console.log('已合并预设场景和用户场景, 总数:', this.scenes.length);
+            console.log('预设场景数量:', this.scenes.filter(scene => scene.isPreset).length);
+        } else {
+            console.error('预设场景不存在或为空!');
+            this.scenes = [...userScenes];
+        }
         
         // 保存合并后的场景到本地存储
         this.saveScenes();
@@ -471,8 +505,10 @@ class SceneManager {
     
     // 显示场景相关表达
     displaySceneExpressions(scene) {
+        console.log('显示场景表达数据:', scene.title, '是否有表达数据:', !!scene.expressions);
+        
         // 隐藏场景选择区域，显示场景相关表达区域
-            document.getElementById('scene-selection').classList.add('hidden');
+        document.getElementById('scene-selection').classList.add('hidden');
         // 确保场景列表完全隐藏
         this.sceneList.classList.add('hidden');
         // 显示表达界面
@@ -486,9 +522,11 @@ class SceneManager {
         
         if (scene.expressions) {
             // 已有表达数据，直接显示
+            console.log('场景已有表达数据，直接渲染');
             this.renderExpressions(scene.expressions);
         } else {
             // 没有表达数据，需要生成
+            console.log('场景没有表达数据，尝试生成');
             this.generateSceneExpressions(scene);
         }
     }
@@ -517,7 +555,7 @@ class SceneManager {
             const dialogueElement = document.createElement('div');
             dialogueElement.className = 'example-dialogue-item';
             dialogueElement.innerHTML = `
-                <div class="dialogue-role">${dialogue.role}:</div>
+                <div class="dialogue-role-row">${dialogue.role}</div>
                 <div class="dialogue-content">
                     <div class="dialogue-chinese">${dialogue.chinese}</div>
                     <div class="dialogue-pinyin">${dialogue.pinyin}</div>
@@ -700,13 +738,76 @@ class SceneManager {
             uiManager.hideLoading();
             
             // 提示用户生成成功，点击后直接进入场景表达界面
+            const self = this; // 保存当前SceneManager实例的引用
             uiManager.showModal(`
                 <div class="success-message">
                     <h3>场景生成成功</h3>
                     <p>已创建新场景: ${scene.title}</p>
-                    <button class="primary-btn" onclick="uiManager.hideModal(); sceneManager.setCurrentScene(sceneManager.scenes[sceneManager.scenes.length-1]);">查看场景详情</button>
+                    <button class="primary-btn" id="view-created-scene-btn">查看场景详情</button>
                 </div>
             `);
+            
+            // 通过DOM添加事件监听器，避免在HTML中使用全局引用
+            setTimeout(() => {
+                const viewSceneBtn = document.getElementById('view-created-scene-btn');
+                if (viewSceneBtn) {
+                    viewSceneBtn.addEventListener('click', function() {
+                        uiManager.hideModal();
+                        
+                        // 先添加基本表达数据，避免API调用失败
+                        if (!scene.expressions) {
+                            // 创建一个基本的表达数据
+                            scene.expressions = {
+                                learningObjectives: `学习在${scene.title}场景中的常用词汇和表达，掌握相关对话技能。`,
+                                keyPhrases: [
+                                    {
+                                        chinese: "您好，请问有什么可以帮助您？",
+                                        pinyin: "Nín hǎo, qǐngwèn yǒu shénme kěyǐ bāngzhù nín?",
+                                        english: "Hello, how may I help you?"
+                                    },
+                                    {
+                                        chinese: "谢谢您的帮助",
+                                        pinyin: "Xièxie nín de bāngzhù",
+                                        english: "Thank you for your help"
+                                    },
+                                    {
+                                        chinese: "我想了解更多信息",
+                                        pinyin: "Wǒ xiǎng liǎojiě gèng duō xìnxī",
+                                        english: "I would like to know more information"
+                                    }
+                                ],
+                                exampleDialogue: [
+                                    {
+                                        role: scene.botRole,
+                                        chinese: "您好，欢迎光临，有什么可以帮您？",
+                                        pinyin: "Nín hǎo, huānyíng guānglín, yǒu shénme kěyǐ bāng nín?",
+                                        english: "Hello, welcome, how may I help you?"
+                                    },
+                                    {
+                                        role: scene.userRole,
+                                        chinese: "您好，我想了解一下...",
+                                        pinyin: "Nín hǎo, wǒ xiǎng liǎojiě yīxià...",
+                                        english: "Hello, I'd like to know about..."
+                                    },
+                                    {
+                                        role: scene.botRole,
+                                        chinese: "没问题，很乐意为您解答。",
+                                        pinyin: "Méi wèntí, hěn lèyì wèi nín jiědá.",
+                                        english: "No problem, I'm happy to answer for you."
+                                    }
+                                ],
+                                culturalBackground: `在${scene.title}场景中，了解中国的礼仪和交流习惯很重要。中国人注重礼貌、尊重和面子，交流时通常以礼相待。`
+                            };
+                            
+                            // 保存到场景列表
+                            self.saveScenes();
+                        }
+                        
+                        // 设置当前场景
+                        self.setCurrentScene(scene);
+                    });
+                }
+            }, 100);
         } catch (error) {
             uiManager.hideLoading();
             uiManager.showError('生成场景失败: ' + error.message);
@@ -844,8 +945,23 @@ class SceneManager {
         this.sceneList.appendChild(presetScenesTitle);
         
         // 先显示预设场景
-        const presetScenes = this.scenes.filter(scene => scene.isPreset);
-        presetScenes.forEach(scene => this.createSceneItem(scene));
+        const presetScenes = this.scenes.filter(scene => scene.isPreset === true);
+        console.log('渲染预设场景数量:', presetScenes.length);
+        
+        if (presetScenes.length > 0) {
+            presetScenes.forEach(scene => {
+                console.log('渲染预设场景:', scene.title, '(isPreset=', scene.isPreset, ')');
+                this.createSceneItem(scene);
+            });
+        } else {
+            console.warn('没有找到预设场景，可能isPreset属性未正确设置');
+            
+            // 如果找不到预设场景，显示一条消息
+            const noPresetsMessage = document.createElement('div');
+            noPresetsMessage.className = 'empty-message';
+            noPresetsMessage.textContent = '预设场景未加载，请刷新页面';
+            this.sceneList.appendChild(noPresetsMessage);
+        }
         
         // 如果有自定义场景，添加自定义场景标题
         const customScenes = this.scenes.filter(scene => !scene.isPreset);
@@ -870,7 +986,13 @@ class SceneManager {
     createSceneItem(scene) {
         const sceneItem = document.createElement('div');
         sceneItem.className = 'scene-item';
-        if (scene.isPreset) sceneItem.classList.add('preset-scene');
+        
+        // 添加预设场景样式
+        if (scene.isPreset) {
+            sceneItem.classList.add('preset-scene');
+            console.log('添加preset-scene类到场景:', scene.title);
+        }
+        
         sceneItem.setAttribute('data-id', scene.id);
         
         const title = document.createElement('h3');
