@@ -334,17 +334,6 @@ class SceneManager {
             console.error('返回场景列表按钮元素不存在!');
         }
         
-        // 开始场景对话按钮
-        if (this.startSceneChatBtn) {
-            this.startSceneChatBtn.addEventListener('click', (e) => {
-                console.log('开始场景对话按钮被点击');
-                e.preventDefault();
-                this.startChat();
-            });
-        } else {
-            console.error('开始场景对话按钮元素不存在!');
-        }
-        
         // 刷新场景按钮
         const refreshScenesBtn = document.getElementById('refresh-scenes-btn');
         if (refreshScenesBtn) {
@@ -408,15 +397,6 @@ class SceneManager {
                 console.log('返回场景列表按钮被点击（延迟绑定）');
                 e.preventDefault();
                 this.hideSceneExpressions();
-            });
-        }
-        
-        if (this.startSceneChatBtn) {
-            console.log('延迟初始化 - 绑定开始场景对话按钮事件');
-            this.startSceneChatBtn.addEventListener('click', (e) => {
-                console.log('开始场景对话按钮被点击（延迟绑定）');
-                e.preventDefault();
-                this.startChat();
             });
         }
     }
@@ -533,8 +513,12 @@ class SceneManager {
     
     // 渲染表达数据
     renderExpressions(expressions) {
-        // 渲染学习目标
-        this.learningObjectives.innerHTML = `<p>${expressions.learningObjectives}</p>`;
+        // 处理学习目标（可能是对象格式）
+        const learningObjectivesContent = typeof expressions.learningObjectives === 'object' ? 
+            `<div>${expressions.learningObjectives.chinese}</div><div class="translation">${expressions.learningObjectives.english}</div>` : 
+            `<p>${expressions.learningObjectives}</p>`;
+        
+        this.learningObjectives.innerHTML = learningObjectivesContent;
         
         // 渲染关键短语
         this.keyPhrases.innerHTML = '';
@@ -552,10 +536,13 @@ class SceneManager {
         // 渲染示例对话
         this.exampleDialogue.innerHTML = '';
         expressions.exampleDialogue.forEach(dialogue => {
+            // 处理dialogue.role可能是对象的情况
+            const roleText = typeof dialogue.role === 'object' ? dialogue.role.chinese : dialogue.role;
+            
             const dialogueElement = document.createElement('div');
             dialogueElement.className = 'example-dialogue-item';
             dialogueElement.innerHTML = `
-                <div class="dialogue-role-row">${dialogue.role}</div>
+                <div class="dialogue-role-row">${roleText}</div>
                 <div class="dialogue-content">
                     <div class="dialogue-chinese">${dialogue.chinese}</div>
                     <div class="dialogue-pinyin">${dialogue.pinyin}</div>
@@ -565,10 +552,14 @@ class SceneManager {
             this.exampleDialogue.appendChild(dialogueElement);
         });
             
-        // 渲染文化背景
+        // 处理文化背景（可能是对象格式）
+        const culturalBackgroundContent = typeof expressions.culturalBackground === 'object' ? 
+            `<div>${expressions.culturalBackground.chinese}</div><div class="translation">${expressions.culturalBackground.english}</div>` : 
+            `<p>${expressions.culturalBackground}</p>`;
+            
         this.culturalBackground.innerHTML = `
             <div class="cultural-background-content">
-                <p>${expressions.culturalBackground}</p>
+                ${culturalBackgroundContent}
             </div>
         `;
     }
@@ -590,7 +581,10 @@ class SceneManager {
             
             // 使用默认数据作为备份，防止API返回不完整
             const defaultExpressions = {
-                learningObjectives: "学习在此场景中常用的词汇和表达，掌握相关对话技能",
+                learningObjectives: {
+                    chinese: "学习在此场景中常用的词汇和表达，掌握相关对话技能",
+                    english: "Learn common vocabulary and expressions in this scenario, and master relevant conversation skills"
+                },
                 keyPhrases: [
                     {
                         chinese: "您好，请问有什么可以帮助您？",
@@ -605,19 +599,32 @@ class SceneManager {
                 ],
                 exampleDialogue: [
                     {
-                        role: scene.botRole,
+                        role: typeof scene.botRole === 'object' ? 
+                            scene.botRole : 
+                            {
+                                chinese: scene.botRole,
+                                english: "Assistant"
+                            },
                         chinese: "您好，有什么需要帮助的吗？",
                         pinyin: "Nín hǎo, yǒu shénme xūyào bāngzhù de ma?",
                         english: "Hello, do you need any help?"
                     },
                     {
-                        role: scene.userRole,
+                        role: typeof scene.userRole === 'object' ? 
+                            scene.userRole : 
+                            {
+                                chinese: scene.userRole,
+                                english: "User"
+                            },
                         chinese: "您好，我想了解一下...",
                         pinyin: "Nín hǎo, wǒ xiǎng liǎojiě yīxià...",
                         english: "Hello, I'd like to know about..."
                     }
                 ],
-                culturalBackground: "这是中国文化背景的基本描述，会随着具体场景而有所不同。"
+                culturalBackground: {
+                    chinese: "这是中国文化背景的基本描述，会随着具体场景而有所不同。",
+                    english: "This is a basic description of Chinese cultural background, which will vary depending on the specific scenario."
+                }
             };
             
             // 合并API返回的数据和默认数据，确保数据完整
@@ -643,7 +650,10 @@ class SceneManager {
             
             // 创建一个基本的表达数据作为备用
             const fallbackExpressions = {
-                learningObjectives: `学习在${scene.title}场景中的常用词汇和表达，掌握相关对话技能。`,
+                learningObjectives: {
+                    chinese: `学习在${scene.title}场景中的常用词汇和表达，掌握相关对话技能。`,
+                    english: `Learn common vocabulary and expressions in the ${scene.title} scenario, and master relevant conversation skills.`
+                },
                 keyPhrases: [
                     {
                         chinese: "您好，请问有什么可以帮助您？",
@@ -663,25 +673,43 @@ class SceneManager {
                 ],
                 exampleDialogue: [
                     {
-                        role: scene.botRole,
+                        role: typeof scene.botRole === 'object' ? 
+                            scene.botRole : 
+                            {
+                                chinese: scene.botRole,
+                                english: "Assistant"
+                            },
                         chinese: "您好，欢迎光临，有什么可以帮您？",
                         pinyin: "Nín hǎo, huānyíng guānglín, yǒu shénme kěyǐ bāng nín?",
                         english: "Hello, welcome, how may I help you?"
                     },
                     {
-                        role: scene.userRole,
+                        role: typeof scene.userRole === 'object' ? 
+                            scene.userRole : 
+                            {
+                                chinese: scene.userRole,
+                                english: "User"
+                            },
                         chinese: "您好，我想了解一下...",
                         pinyin: "Nín hǎo, wǒ xiǎng liǎojiě yīxià...",
                         english: "Hello, I'd like to know about..."
                     },
                     {
-                        role: scene.botRole,
+                        role: typeof scene.botRole === 'object' ? 
+                            scene.botRole : 
+                            {
+                                chinese: scene.botRole,
+                                english: "Assistant"
+                            },
                         chinese: "没问题，很乐意为您解答。",
                         pinyin: "Méi wèntí, hěn lèyì wèi nín jiědá.",
                         english: "No problem, I'm happy to answer for you."
                     }
                 ],
-                culturalBackground: `在${scene.title}场景中，了解中国的礼仪和交流习惯很重要。中国人注重礼貌、尊重和面子，交流时通常以礼相待。`
+                culturalBackground: {
+                    chinese: `在${scene.title}场景中，了解中国的礼仪和交流习惯很重要。中国人注重礼貌、尊重和面子，交流时通常以礼相待。`,
+                    english: `In the ${scene.title} scenario, understanding Chinese etiquette and communication habits is important. Chinese people emphasize politeness, respect, and face, and are usually courteous when communicating.`
+                }
             };
             
             // 保存备用数据
@@ -725,9 +753,9 @@ class SceneManager {
             };
             
             // 更新UI
-            this.botRole.textContent = scene.botRole;
-            this.userRole.textContent = scene.userRole;
-            this.dialogueTask.textContent = scene.dialogueTask;
+            this.botRole.textContent = typeof scene.botRole === 'object' ? scene.botRole.chinese : scene.botRole;
+            this.userRole.textContent = typeof scene.userRole === 'object' ? scene.userRole.chinese : scene.userRole;
+            this.dialogueTask.textContent = typeof scene.dialogueTask === 'object' ? scene.dialogueTask.chinese : scene.dialogueTask;
             this.sceneResult.classList.remove('hidden');
             
             // 添加到场景列表
@@ -758,7 +786,10 @@ class SceneManager {
                         if (!scene.expressions) {
                             // 创建一个基本的表达数据
                             scene.expressions = {
-                                learningObjectives: `学习在${scene.title}场景中的常用词汇和表达，掌握相关对话技能。`,
+                                learningObjectives: {
+                                    chinese: `学习在${scene.title}场景中的常用词汇和表达，掌握相关对话技能。`,
+                                    english: `Learn common vocabulary and expressions in the ${scene.title} scenario, and master relevant conversation skills.`
+                                },
                                 keyPhrases: [
                                     {
                                         chinese: "您好，请问有什么可以帮助您？",
@@ -796,7 +827,10 @@ class SceneManager {
                                         english: "No problem, I'm happy to answer for you."
                                     }
                                 ],
-                                culturalBackground: `在${scene.title}场景中，了解中国的礼仪和交流习惯很重要。中国人注重礼貌、尊重和面子，交流时通常以礼相待。`
+                                culturalBackground: {
+                                    chinese: `在${scene.title}场景中，了解中国的礼仪和交流习惯很重要。中国人注重礼貌、尊重和面子，交流时通常以礼相待。`,
+                                    english: `In the ${scene.title} scenario, understanding Chinese etiquette and communication habits is important. Chinese people emphasize politeness, respect, and face, and are usually courteous when communicating.`
+                                }
                             };
                             
                             // 保存到场景列表
@@ -893,8 +927,13 @@ class SceneManager {
         // 重置对话
         apiService.resetConversation();
         
+        // 提取场景角色和任务信息（支持对象格式）
+        const botRole = typeof this.currentScene.botRole === 'object' ? this.currentScene.botRole.chinese : this.currentScene.botRole;
+        const userRole = typeof this.currentScene.userRole === 'object' ? this.currentScene.userRole.chinese : this.currentScene.userRole;
+        const dialogueTask = typeof this.currentScene.dialogueTask === 'object' ? this.currentScene.dialogueTask.chinese : this.currentScene.dialogueTask;
+        
         // 添加场景信息到对话
-        const sceneInfo = `情景：你是${this.currentScene.botRole}，我是${this.currentScene.userRole}。我的任务是${this.currentScene.dialogueTask}。请你严格扮演你的角色，用自然的中文与我对话。请在你的每个回复后面，另起一行添加你的回复用拼音注音，用方括号括起来。`;
+        const sceneInfo = `情景：你是${botRole}，我是${userRole}。我的任务是${dialogueTask}。请你严格扮演你的角色，用自然的中文与我对话。每次回复请严格按照如下格式输出：\n第一行是你的回复内容的拼音，\n第二行是你的回复内容的中文原文，\n第三行是你的回复内容的英文翻译。不要添加任何"拼音：" "中文：" "英文："等标签，只输出三行内容。`;
         
         // 发送场景信息作为系统消息
         chatManager.addSystemMessage(sceneInfo);
@@ -915,8 +954,13 @@ class SceneManager {
             // 重置对话
             apiService.resetConversation();
             
+            // 提取场景角色和任务信息（支持对象格式）
+            const botRole = typeof this.currentScene.botRole === 'object' ? this.currentScene.botRole.chinese : this.currentScene.botRole;
+            const userRole = typeof this.currentScene.userRole === 'object' ? this.currentScene.userRole.chinese : this.currentScene.userRole;
+            const dialogueTask = typeof this.currentScene.dialogueTask === 'object' ? this.currentScene.dialogueTask.chinese : this.currentScene.dialogueTask;
+            
             // 添加场景信息到对话
-            const sceneInfo = `情景：你是${this.currentScene.botRole}，我是${this.currentScene.userRole}。我的任务是${this.currentScene.dialogueTask}。请你严格扮演你的角色，用自然的中文与我对话。请在你的每个回复后面，另起一行添加你的回复用拼音注音，用方括号括起来。`;
+            const sceneInfo = `情景：你是${botRole}，我是${userRole}。我的任务是${dialogueTask}。请你严格扮演你的角色，用自然的中文与我对话。每次回复请严格按照如下格式输出：第一行是你的回复内容的拼音，第二行是你的回复内容的中文原文，第三行是你的回复内容的英文翻译。不要添加任何"拼音：" "中文：" "英文："等标签，只输出三行内容。`;
             
             // 发送场景信息作为系统消息
             chatManager.addSystemMessage(sceneInfo);
@@ -1012,6 +1056,22 @@ class SceneManager {
         sceneItem.appendChild(title);
         sceneItem.appendChild(description);
         
+        // 为非预设场景添加角色信息的简要显示
+        if (!scene.isPreset) {
+            // 获取角色的中文文本
+            const botRoleText = typeof scene.botRole === 'object' ? scene.botRole.chinese : scene.botRole;
+            const userRoleText = typeof scene.userRole === 'object' ? scene.userRole.chinese : scene.userRole;
+            
+            // 创建角色信息元素
+            const rolesInfo = document.createElement('div');
+            rolesInfo.className = 'scene-roles-info';
+            rolesInfo.innerHTML = `
+                <span class="scene-bot-role">${botRoleText}</span> vs 
+                <span class="scene-user-role">${userRoleText}</span>
+            `;
+            sceneItem.appendChild(rolesInfo);
+        }
+        
         // 添加点击事件
         sceneItem.addEventListener('click', () => {
             this.setCurrentScene(scene);
@@ -1022,6 +1082,19 @@ class SceneManager {
     
     // 显示场景详情
     showSceneDetails(scene) {
+        // 处理botRole、userRole和dialogueTask可能是对象的情况
+        const botRoleText = typeof scene.botRole === 'object' ? 
+            `<div>${scene.botRole.chinese}</div><div class="translation">${scene.botRole.english}</div>` : 
+            scene.botRole;
+            
+        const userRoleText = typeof scene.userRole === 'object' ? 
+            `<div>${scene.userRole.chinese}</div><div class="translation">${scene.userRole.english}</div>` : 
+            scene.userRole;
+            
+        const dialogueTaskText = typeof scene.dialogueTask === 'object' ? 
+            `<div>${scene.dialogueTask.chinese}</div><div class="translation">${scene.dialogueTask.english}</div>` : 
+            scene.dialogueTask;
+
         const content = `
             <div class="scene-details">
                 <h3>${scene.title}</h3>
@@ -1029,16 +1102,16 @@ class SceneManager {
                 <div class="role-info">
                     <div class="role-item">
                         <h4>AI角色</h4>
-                        <p>${scene.botRole}</p>
+                        <div>${botRoleText}</div>
                     </div>
                     <div class="role-item">
                         <h4>你的角色</h4>
-                        <p>${scene.userRole}</p>
+                        <div>${userRoleText}</div>
                     </div>
                 </div>
                 <div class="task-info">
                     <h4>对话任务</h4>
-                    <p>${scene.dialogueTask}</p>
+                    <div>${dialogueTaskText}</div>
                 </div>
             </div>
         `;

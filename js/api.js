@@ -56,17 +56,31 @@ class ApiService {
 2. 根据偏误分类（词汇偏误、语法偏误；整体偏误、局部偏误；显性偏误、隐性偏误），对用户的问题进行分类。
 3. 每个错误都提供详细解释和语法规则
 4. 格式必须严格按照条目清晰列出
+5. 如果没有明显错误，可以表扬并提供更地道的表达。
 
-请按照以下格式输出反馈：
-1. 原句："用户原句"
-   问题：词汇偏误/语法偏误（需指出具体语法点）；整体偏误/局部偏误；显性偏误/隐性偏误（若为隐性偏误，则归为"没有明显错误"）
-   建议："更自然的表达"
-   解释：简短的语法解释或使用规则
-   
-2. 原句："用户的另一句话"
-   ...（以此类推）
-
-如果没有明显错误，可以表扬并提供更地道的表达。`
+请以JSON格式返回分析结果，格式如下：
+{
+    "feedback": [
+        {
+            "original": {
+                "chinese": "用户原句",
+                "english": "User's original sentence"
+            },
+            "issue": {
+                "chinese": "词汇/语法偏误（需指出具体语法类型），整体/局部偏误，显性/隐性偏误",
+                "english": "Vocabulary/Grammar (indicate error type), Global/Partial error, Explicit/Implicit error"
+            },
+            "suggestion": {
+                "chinese": "更自然的表达",
+                "english": "More natural expression"
+            },
+            "explanation": {
+                "chinese": "语法解释或使用规则",
+                "english": "Grammar explanation or usage rules"
+            }
+        }
+    ]
+}`
                 },
                 {
                     role: 'user',
@@ -136,21 +150,37 @@ class ApiService {
 2. 内容要有指导性，帮助用户理解对话情境
 3. 每个描述应当具体明确，避免过于笼统
 4. 根据场景特点定制内容
+5. 必须同时提供中文和英文两种语言的描述，内容要一致
+6. 不接受只有中文或只有英文的结果
 
 请严格按照以下JSON格式返回（不要添加多余内容）：
 {
-  "botRole": "BOT角色的简短描述",
-  "userRole": "用户角色的简短描述",
-  "dialogueTask": "对话任务的简短描述"
+  "botRole":
+  {
+    "chinese":"BOT角色的简短描述(中文)",
+    "english":"BOT role description(English)"
+  },
+  "userRole":
+  {
+    "chinese":"用户角色的简短描述(中文)",
+    "english":"User role description(English)"
+  },
+  "dialogueTask":
+  {
+    "chinese":"对话任务的简短描述(中文)",
+    "english":"Dialogue task description(English)"
+  }
 }`;
 
         const messages = [
             {
                 role: 'system',
-                content: `你是一位专业的语言学习内容设计师，擅长创建简短清晰的对话场景和角色描述。
-请根据用户提供的场景信息，生成适合语言学习的对话任务卡片内容。
+                content: `你是一位专业的双语语言学习内容设计师，擅长创建中英双语的对话场景和角色描述。
+你的任务是根据用户提供的场景信息，生成既有中文又有英文的对话任务卡片内容。
+必须确保同时返回每一项内容的中文和英文版本，且中英文意思一致。
 只返回符合要求的JSON格式数据，不要添加任何其他解释或描述。
-确保输出是有效的JSON格式，可以被直接解析。`
+确保输出是有效的JSON格式，可以被直接解析。
+在任何情况下，都不接受只有单语言(只有中文或只有英文)的输出结果。`
             },
             {
                 role: 'user',
@@ -206,25 +236,34 @@ class ApiService {
     
     // 获取场景相关表达
     async getSceneExpressions(title, description, botRole, userRole, dialogueTask) {
+        // 获取角色的中文表示
+        const botRoleChinese = typeof botRole === 'object' ? botRole.chinese : botRole;
+        const userRoleChinese = typeof userRole === 'object' ? userRole.chinese : userRole;
+        const dialogueTaskChinese = typeof dialogueTask === 'object' ? dialogueTask.chinese : dialogueTask;
+        
         const promptMessage = `请为以下中文学习场景生成相关表达数据，包括学习目标、关键短语、示例对话和文化背景。
 
 场景标题：${title}
 场景描述：${description}
-AI角色（用2-5个字表示）：${botRole}
-用户角色（用2-5个字表示）：${userRole}
-对话任务：${dialogueTask}
+AI角色：${botRoleChinese}
+用户角色：${userRoleChinese}
+对话任务：${dialogueTaskChinese}
 
 要求：
-1. 学习目标：简明描述学习者通过这个场景应该学会什么语言技能和表达能力，30-60字。
+1. 学习目标：简明描述学习者通过这个场景应该学会什么语言技能和表达能力，必须同时提供中英文描述。
 2. 关键短语：提供5-8个在这个场景中最常用的短语，每个短语必须包含中文、拼音和英文翻译。
-3. 示例对话：提供一段3-5轮的示例对话，每个对话必须包含角色（用2-5个字表示）、中文、拼音和英文翻译。
-4. 文化背景：简述与这个场景相关的中国文化知识点，80-120字。
+3. 示例对话：提供一段3-5轮的示例对话，每个对话中的角色、内容必须包含中文、拼音和英文翻译。注意对话中的角色名称需要与提供的AI角色和用户角色匹配。
+4. 文化背景：简述与这个场景相关的中国文化知识点，必须同时提供中英文描述。
 
 所有内容必须同时对中文学习者有价值，且符合实际中国人的语言使用习惯。所有拼音必须准确无误。
 
 请严格按照以下JSON格式返回（不要添加多余内容）：
 {
-  "learningObjectives": "学习目标内容",
+  "learningObjectives":
+    {
+        "chinese":"学习目标内容",
+        "english":"Learning objectives content"
+    },
   "keyPhrases": [
     {
       "chinese": "中文短语1",
@@ -235,21 +274,30 @@ AI角色（用2-5个字表示）：${botRole}
   ],
   "exampleDialogue": [
     {
-      "role": "角色1",
+      "role": {
+        "chinese": "角色中文名",
+        "english": "Role English name"
+      },
       "chinese": "中文对话1",
       "pinyin": "Zhōngwén duìhuà 1",
       "english": "Chinese dialogue 1"
     },
     // 更多对话...
   ],
-  "culturalBackground": "文化背景内容"
+  "culturalBackground":
+    {
+        "chinese":"文化背景内容",
+        "english":"Cultural background content"
+    }
 }`;
 
         const messages = [
             {
                 role: 'system',
-                content: `你是一位专业的中文教学内容设计专家，精通中文及拼音标注。
-请根据用户提供的场景信息，生成适合中文学习者的相关表达和学习资料。
+                content: `你是一位专业的中文教学内容设计专家，精通中文、英文及拼音标注。
+请根据用户提供的场景信息，生成适合中文学习者的双语相关表达和学习资料。
+必须同时生成中文和英文内容，确保所有需要双语的字段都有完整的中英文内容。
+对于示例对话中的角色名称，请使用对象格式包含中英文名称，与整体格式保持一致。
 只返回符合要求的JSON格式数据，不要添加任何其他解释或描述。
 确保输出是有效的JSON格式，可以被直接解析。
 拼音必须准确无误，使用标准汉语拼音。`

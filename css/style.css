@@ -778,6 +778,29 @@ textarea {
     margin-top: 0.3rem;
 }
 
+.bot-message .translation {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--light-text);
+    margin-top: 0.5rem;
+    font-style: italic;
+}
+
+/* 通用translation类，用于英文翻译 */
+.translation {
+    color: var(--light-text);
+    font-size: 0.9rem;
+    font-style: italic;
+    margin-top: 0.3rem;
+}
+
+/* 对话气泡中的翻译 */
+.bot-message .translation {
+    display: block;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
 /* 隐藏类 */
 .hidden {
     display: none !important;
@@ -1357,4 +1380,23 @@ textarea {
     text-align: center;
     margin-bottom: 1.5rem;
     color: var(--text-color);
+}
+
+/* 场景角色信息简要显示 */
+.scene-roles-info {
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--light-text);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+}
+
+.scene-bot-role, .scene-user-role {
+    background-color: rgba(52, 152, 219, 0.1);
+    color: var(--primary-color);
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    font-weight: 500;
 } 

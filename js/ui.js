@@ -191,57 +191,135 @@ class UiManager {
 
         let formattedHTML = '';
         
-        // 使用正则表达式匹配形如 "1. 原句："内容"" 的模式
-        const feedbackItems = feedbackText.split(/(\d+\.\s+原句[:：])/).filter(item => item.trim() !== '');
-        
-        // 对匹配到的内容进行处理
-        for (let i = 0; i < feedbackItems.length; i += 2) {
-            if (i + 1 >= feedbackItems.length) break;
+        try {
+            // 尝试解析JSON格式的反馈
+            let feedbackData;
+            if (typeof feedbackText === 'string') {
+                // 清理掉可能存在的Markdown代码块标记
+                let cleanedText = feedbackText.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
+                
+                // 尝试自动检测和提取JSON部分
+                const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    cleanedText = jsonMatch[0];
+                }
+                
+                // 解析JSON
+                feedbackData = JSON.parse(cleanedText);
+            } else {
+                feedbackData = feedbackText; // 已经是对象
+            }
             
-            const numberPart = feedbackItems[i]; // "1. 原句："
-            const number = numberPart.match(/\d+/)[0]; // 提取数字
-            const contentPart = feedbackItems[i + 1]; // 剩余内容
+            // 检查是否有反馈数据
+            if (!feedbackData.feedback || !Array.isArray(feedbackData.feedback) || feedbackData.feedback.length === 0) {
+                return '<div class="empty-message">暂无反馈内容</div>';
+            }
             
-            // 提取原句、问题、建议和解释
-            const originalMatch = contentPart.match(/"([^"]+)"/) || contentPart.match(/"([^"]+)"/);
-            const original = originalMatch ? originalMatch[1] : '';
-            
-            const problemMatch = contentPart.match(/问题[:：](.+?)建议[:：]/s);
-            const problem = problemMatch ? problemMatch[1].trim() : '';
-            
-            const suggestionMatch = contentPart.match(/建议[:：](.+?)解释[:：]/s);
-            const suggestion = suggestionMatch ? suggestionMatch[1].trim() : '';
-            
-            const explanationMatch = contentPart.match(/解释[:：](.+?)(?=\d+\.\s+原句[:：]|$)/s);
-            const explanation = explanationMatch ? explanationMatch[1].trim() : '';
-            
-            // 构建HTML
-            formattedHTML += `
-                <div class="feedback-item">
-                    <div class="feedback-item-header">
-                        <div class="feedback-item-number">${number}</div>
+            // 遍历反馈项
+            feedbackData.feedback.forEach((item, index) => {
+                const number = index + 1;
+                
+                formattedHTML += `
+                    <div class="feedback-item">
+                        <div class="feedback-item-header">
+                            <div class="feedback-item-number">${number}</div>
+                        </div>
+                        <div class="feedback-section">
+                            <div class="feedback-label"><i class="fas fa-quote-left"></i> 原句</div>
+                            <div class="feedback-original">
+                                <div>${item.original.chinese}</div>
+                                <div class="translation">${item.original.english}</div>
+                            </div>
+                        </div>
+                        <div class="feedback-section">
+                            <div class="feedback-label"><i class="fas fa-exclamation-circle"></i> 问题</div>
+                            <div class="feedback-problem">
+                                <div>${item.issue.chinese}</div>
+                                <div class="translation">${item.issue.english}</div>
+                            </div>
+                        </div>
+                        <div class="feedback-section">
+                            <div class="feedback-label"><i class="fas fa-lightbulb"></i> 建议</div>
+                            <div class="feedback-correction">
+                                <div>${item.suggestion.chinese}</div>
+                                <div class="translation">${item.suggestion.english}</div>
+                            </div>
+                        </div>
+                        <div class="feedback-section">
+                            <div class="feedback-label"><i class="fas fa-info-circle"></i> 解释</div>
+                            <div class="feedback-explanation">
+                                <div>${item.explanation.chinese}</div>
+                                <div class="translation">${item.explanation.english}</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="feedback-section">
-                        <div class="feedback-label"><i class="fas fa-quote-left"></i> 原句</div>
-                        <div class="feedback-original">${original}</div>
-                    </div>
-                    <div class="feedback-section">
-                        <div class="feedback-label"><i class="fas fa-exclamation-circle"></i> 问题</div>
-                        <div class="feedback-problem">${problem}</div>
-                    </div>
-                    <div class="feedback-section">
-                        <div class="feedback-label"><i class="fas fa-lightbulb"></i> 建议</div>
-                        <div class="feedback-correction">${suggestion.replace(/^["'](.+)["']$/, '$1')}</div>
-                    </div>
-                    <div class="feedback-section">
-                        <div class="feedback-label"><i class="fas fa-info-circle"></i> 解释</div>
-                        <div class="feedback-explanation">${explanation}</div>
-                    </div>
-                </div>
-            `;
+                `;
+            });
+            
+            return formattedHTML;
+            
+        } catch (error) {
+            console.error('解析反馈内容失败:', error);
+            
+            // 尝试使用旧方法解析（兼容性处理）
+            try {
+                // 使用正则表达式匹配形如 "1. 原句："内容"" 的模式
+                const feedbackItems = feedbackText.split(/(\d+\.\s+原句[:：])/).filter(item => item.trim() !== '');
+                
+                // 对匹配到的内容进行处理
+                for (let i = 0; i < feedbackItems.length; i += 2) {
+                    if (i + 1 >= feedbackItems.length) break;
+                    
+                    const numberPart = feedbackItems[i]; // "1. 原句："
+                    const number = numberPart.match(/\d+/)[0]; // 提取数字
+                    const contentPart = feedbackItems[i + 1]; // 剩余内容
+                    
+                    // 提取原句、问题、建议和解释
+                    const originalMatch = contentPart.match(/"([^"]+)"/) || contentPart.match(/"([^"]+)"/);
+                    const original = originalMatch ? originalMatch[1] : '';
+                    
+                    const problemMatch = contentPart.match(/问题[:：](.+?)建议[:：]/s);
+                    const problem = problemMatch ? problemMatch[1].trim() : '';
+                    
+                    const suggestionMatch = contentPart.match(/建议[:：](.+?)解释[:：]/s);
+                    const suggestion = suggestionMatch ? suggestionMatch[1].trim() : '';
+                    
+                    const explanationMatch = contentPart.match(/解释[:：](.+?)(?=\d+\.\s+原句[:：]|$)/s);
+                    const explanation = explanationMatch ? explanationMatch[1].trim() : '';
+                    
+                    // 构建HTML
+                    formattedHTML += `
+                        <div class="feedback-item">
+                            <div class="feedback-item-header">
+                                <div class="feedback-item-number">${number}</div>
+                            </div>
+                            <div class="feedback-section">
+                                <div class="feedback-label"><i class="fas fa-quote-left"></i> 原句</div>
+                                <div class="feedback-original">${original}</div>
+                            </div>
+                            <div class="feedback-section">
+                                <div class="feedback-label"><i class="fas fa-exclamation-circle"></i> 问题</div>
+                                <div class="feedback-problem">${problem}</div>
+                            </div>
+                            <div class="feedback-section">
+                                <div class="feedback-label"><i class="fas fa-lightbulb"></i> 建议</div>
+                                <div class="feedback-correction">${suggestion.replace(/^["'](.+)["']$/, '$1')}</div>
+                            </div>
+                            <div class="feedback-section">
+                                <div class="feedback-label"><i class="fas fa-info-circle"></i> 解释</div>
+                                <div class="feedback-explanation">${explanation}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                return formattedHTML || '<div class="empty-message">无法解析反馈内容</div>';
+                
+            } catch (parseError) {
+                console.error('备用解析方法也失败:', parseError);
+                return '<div class="empty-message">无法解析反馈内容</div>';
+            }
         }
-        
-        return formattedHTML || '<div class="empty-message">无法解析反馈内容</div>';
     }
 }
 

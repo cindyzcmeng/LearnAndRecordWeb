@@ -125,23 +125,30 @@ class ChatManager {
         const messageElement = document.createElement('div');
         messageElement.className = `message ${sender}-message`;
         
-        // 处理带有拼音的消息（仅适用于bot消息）
+        // 处理bot消息
         if (sender === 'bot') {
-            // 分离消息和拼音
-            const parts = message.split(/\[|\]/); // 用[或]分割
-            if (parts.length >= 2) {
-                // 有拼音标注
-                const messageContent = document.createElement('span');
-                messageContent.textContent = parts[0].trim(); // 原始消息部分
-                
-                const pinyinElement = document.createElement('span');
+            // 按行分割消息
+            const lines = message.split('\n');
+            if (lines.length === 3) {
+                // 拼音行
+                const pinyinElement = document.createElement('div');
                 pinyinElement.className = 'pinyin';
-                pinyinElement.textContent = parts[1].trim(); // 拼音部分
+                pinyinElement.textContent = lines[0].trim(); // 拼音部分
                 
-                messageElement.appendChild(messageContent);
+                // 中文行
+                const messageContent = document.createElement('div');
+                messageContent.textContent = lines[1].trim(); // 中文部分
+                
+                // 英文行
+                const translationElement = document.createElement('div');
+                translationElement.className = 'translation';
+                translationElement.textContent = lines[2].trim(); // 英文部分
+                
                 messageElement.appendChild(pinyinElement);
+                messageElement.appendChild(messageContent);
+                messageElement.appendChild(translationElement);
             } else {
-                // 没有找到拼音标注
+                // 格式不正确时直接显示原文
                 messageElement.textContent = message;
             }
         } else {

@@ -409,26 +409,36 @@ class DiaryManager {
     // 查看日记详情
     viewDiaryDetail(diary) {
         this.detailDiaryTitle.textContent = diary.title;
-        this.detailDiaryText.textContent = diary.text;
-        this.detailFeedbackContent.innerHTML = uiManager.formatFeedback(diary.feedback);
-        /*
-        // 如果有音频，添加音频播放器
-        if (diary.audioUrl) {
-            const audioPlayer = document.createElement('audio');
-            audioPlayer.controls = true;
-            audioPlayer.src = diary.audioUrl;
-            
-            const audioContainer = document.createElement('div');
-            audioContainer.className = 'audio-container';
-            audioContainer.innerHTML = '<h3>录音</h3>';
-            audioContainer.appendChild(audioPlayer);
-            
-            this.detailDiaryText.parentNode.insertBefore(audioContainer, this.detailDiaryText);
+        // 判断是否为对话类条目
+        if (diary.isConversation) {
+            // 解析对话内容，假设格式为：\n分隔的"我: 内容"或"对方: 内容"
+            const lines = diary.text.split(/\n+/).filter(line => line.trim());
+            let html = '';
+            let firstUserSkipped = false;
+            lines.forEach(line => {
+                if (line.startsWith('我:')) {
+                    const content = line.replace('我:', '').trim();
+                    // 跳过第一句"请开始对话"
+                    if (!firstUserSkipped && content === '请开始对话') {
+                        firstUserSkipped = true;
+                        return;
+                    }
+                    firstUserSkipped = true;
+                    html += `<div class="user-message message">${content}</div>`;
+                } else if (line.startsWith('对方:')) {
+                    html += `<div class="bot-message message">${line.replace('对方:', '').trim()}</div>`;
+                } else {
+                    html += `<div class="message">${line.trim()}</div>`;
+                }
+            });
+            this.detailDiaryText.innerHTML = html;
+        } else {
+            // 普通日记
+            this.detailDiaryText.textContent = diary.text;
         }
-        */
+        this.detailFeedbackContent.innerHTML = uiManager.formatFeedback(diary.feedback);
         // 设置删除按钮的数据ID
         this.deleteDiaryBtn.setAttribute('data-id', diary.id);
-        
         // 导航到详情页
         uiManager.navigateTo('diary-detail');
     }
